@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// PUSPA Models
+
+model Member {
+  id              String   @id @default(cuid())
+  name            String
+  icNumber        String   @unique
+  phone           String
+  email           String?
+  address         String?
+  category        String   @default("asnaf") // asnaf, volunteer, donor, staff
+  status          String   @default("active") // active, inactive, suspended
+  joinDate        DateTime @default(now())
+  familyMembers   Int      @default(1)
+  monthlyIncome   Float    @default(0)
+  notes           String?
+  avatar          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  donations      Donation[]
+  programmeMembers ProgrammeMember[]
+}
+
+model Programme {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  category        String   @default("food-aid") // food-aid, education, skills, healthcare, financial, community
+  status          String   @default("active") // active, completed, upcoming, cancelled
+  startDate       DateTime?
+  endDate         DateTime?
+  location        String?
+  beneficiaryCount Int     @default(0)
+  volunteerCount  Int      @default(0)
+  budget          Float    @default(0)
+  actualCost      Float    @default(0)
+  partners        String?  // JSON array of partner names
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  donations      Donation[]
+  programmeMembers ProgrammeMember[]
+  activities      Activity[]
+}
+
+model Donation {
+  id              String   @id @default(cuid())
+  donorName       String
+  donorEmail      String?
+  donorPhone      String?
+  amount          Float
+  method          String   @default("bank-transfer") // bank-transfer, cash, online, cheque
+  status          String   @default("confirmed") // pending, confirmed, rejected
+  receiptNumber   String?
+  date            DateTime @default(now())
+  programmeId     String?
+  memberId        String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  programme       Programme?   @relation(fields: [programmeId], references: [id])
+  member          Member?      @relation(fields: [memberId], references: [id])
+}
+
+model ProgrammeMember {
+  id              String   @id @default(cuid())
+  programmeId     String
+  memberId        String
+  role            String   @default("beneficiary") // beneficiary, volunteer, organizer
+  status          String   @default("active")
+  joinedAt        DateTime @default(now())
+  notes           String?
+
+  programme       Programme @relation(fields: [programmeId], references: [id])
+  member          Member    @relation(fields: [memberId], references: [id])
+
+  @@unique([programmeId, memberId])
+}
+
+model Activity {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  type            String   @default("general") // general, donation, programme, member, system
+  date            DateTime @default(now())
+  metadata        String?  // JSON
+  createdAt       DateTime @default(now())
+
+  programme       Programme? @relation(fields: [programmeId], references: [id])
+  programmeId     String?
+}
