@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,10 @@ import {
   Moon,
   Sun,
   Flower2,
+  FileText,
+  Search,
+  Kanban,
+  Bell,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -27,14 +31,20 @@ import ProgrammesTab from '@/components/puspa/programmes-tab';
 import DonationsTab from '@/components/puspa/donations-tab';
 import AdminTab from '@/components/puspa/admin-tab';
 import ChatTab from '@/components/puspa/chat-tab';
+import AIReportTab from '@/components/puspa/ai-report-tab';
+import ActivitiesKanban from '@/components/puspa/activities-kanban';
+import CommandPalette from '@/components/puspa/command-palette';
+import NotificationBell from '@/components/puspa/notification-bell';
 
 const tabs = [
   { id: 'dashboard', label: 'Utama', icon: LayoutDashboard },
   { id: 'members', label: 'Ahli', icon: Users },
   { id: 'programmes', label: 'Program', icon: CalendarDays },
   { id: 'donations', label: 'Donasi', icon: Heart },
+  { id: 'activities', label: 'Aktiviti', icon: Kanban },
   { id: 'admin', label: 'Pentadbiran', icon: Building2 },
   { id: 'chat', label: 'AI Chat', icon: MessageCircle },
+  { id: 'report', label: 'Laporan AI', icon: FileText },
 ] as const;
 
 type TabId = (typeof tabs)[number]['id'];
@@ -43,6 +53,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -59,11 +70,28 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Global keyboard shortcut for Command Palette (Ctrl+K / Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandOpen((prev) => !prev);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleTabChange = (tab: TabId) => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleCommandNavigate = useCallback((tab: string, _itemId?: string) => {
+    handleTabChange(tab as TabId);
+    setCommandOpen(false);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/50 via-white to-amber-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
@@ -102,7 +130,7 @@ export default function Home() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-0.5">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -111,13 +139,13 @@ export default function Home() {
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
                     className={cn(
-                      'relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                      'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200',
                       isActive
                         ? 'text-emerald-700 dark:text-emerald-400'
                         : 'text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
                     )}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                     {tab.label}
                     {isActive && (
                       <motion.div
@@ -132,7 +160,35 @@ export default function Home() {
             </nav>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Command Palette Trigger */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCommandOpen(true)}
+                className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground h-8 px-3 bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-800/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/20"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Cari...</span>
+                <kbd className="pointer-events-none ml-1 inline-flex h-5 select-none items-center gap-0.5 rounded border border-muted-foreground/20 bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  <span className="text-xs">&#8984;</span>K
+                </kbd>
+              </Button>
+
+              {/* Mobile Search Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="sm:hidden text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                onClick={() => setCommandOpen(true)}
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+
+              {/* Notification Bell */}
+              <NotificationBell />
+
+              {/* Theme Toggle */}
               {mounted && (
                 <Button
                   variant="ghost"
@@ -167,7 +223,7 @@ export default function Home() {
               transition={{ duration: 0.2 }}
               className="lg:hidden overflow-hidden border-t border-emerald-100 dark:border-emerald-900/30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl"
             >
-              <nav className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-3 gap-2">
+              <nav className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-4 gap-1.5">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -176,13 +232,13 @@ export default function Home() {
                       key={tab.id}
                       onClick={() => handleTabChange(tab.id)}
                       className={cn(
-                        'flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-medium transition-all',
+                        'flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[10px] font-medium transition-all',
                         isActive
                           ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
                           : 'text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-4 h-4" />
                       {tab.label}
                     </button>
                   );
@@ -192,6 +248,13 @@ export default function Home() {
           )}
         </AnimatePresence>
       </header>
+
+      {/* Command Palette */}
+      <CommandPalette
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        onNavigate={handleCommandNavigate}
+      />
 
       {/* Main Content */}
       <main className="flex-1 w-full">
@@ -208,8 +271,10 @@ export default function Home() {
               {activeTab === 'members' && <MembersTab />}
               {activeTab === 'programmes' && <ProgrammesTab />}
               {activeTab === 'donations' && <DonationsTab />}
+              {activeTab === 'activities' && <ActivitiesKanban />}
               {activeTab === 'admin' && <AdminTab />}
               {activeTab === 'chat' && <ChatTab />}
+              {activeTab === 'report' && <AIReportTab />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -233,7 +298,7 @@ export default function Home() {
                   PUSPA
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Pertubuhan Urus Peduli Asnaf KL & Selangor
+                  Pertubuhan Urus Peduli Asnaf KL &amp; Selangor
                 </p>
               </div>
             </div>

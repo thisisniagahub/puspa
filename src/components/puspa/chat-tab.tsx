@@ -1,11 +1,30 @@
 'use client';
 
-import { useState, useRef, useEffect, type FormEvent } from 'react';
-import { Send, Bot, User, MessageCircle, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react';
+import ReactMarkdown from 'react-markdown';
+import {
+  Send,
+  Bot,
+  User,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Trash2,
+  Copy,
+  MessageCircle,
+  Sparkles,
+  Check,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -13,23 +32,49 @@ interface ChatMessage {
   id: string;
   role: 'user' | 'ai';
   content: string;
-  timestamp: Date;
+  timestamp: number; // store as ms timestamp for JSON serialization
+}
+
+interface QuickQuestionGroup {
+  label: string;
+  questions: string[];
 }
 
 // ─── Data ──────────────────────────────────────────────────────────────
 
-const QUICK_QUESTIONS = [
-  'Apakah program yang ditawarkan PUSPA?',
-  'Bagaimana untuk mendaftar sebagai sukarela?',
-  'Di manakah lokasi operasi PUSPA?',
-  'Bagaimana untuk membuat sumbangan?',
+const QUICK_QUESTIONS: QuickQuestionGroup[] = [
+  {
+    label: 'Tentang PUSPA',
+    questions: [
+      'Apakah program yang ditawarkan PUSPA?',
+      'Siapakah jawatankuasa PUSPA?',
+    ],
+  },
+  {
+    label: 'Untuk Ahli',
+    questions: [
+      'Bagaimana untuk mendaftar sebagai sukarela?',
+      'Apakah kelayakan untuk menerima bantuan?',
+    ],
+  },
+  {
+    label: 'Sumbangan',
+    questions: [
+      'Bagaimana untuk membuat sumbangan?',
+      'Adakah sumbangan pemotongan cukai?',
+    ],
+  },
 ];
+
+const STORAGE_KEY = 'puspa-chat-history';
+const MAX_MESSAGES = 50;
 
 const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
   role: 'ai',
-  content: 'Assalamualaikum! Saya pembantu maya PUSPA. Boleh saya bantu anda?',
-  timestamp: new Date(),
+  content:
+    'Assalamualaikum! 👋 Saya pembantu maya **PUSPA**. Boleh saya bantu anda?\n\nAnda boleh bertanya tentang program, keahlian, sumbangan, atau apa-apa perkara berkaitan PUSPA.',
+  timestamp: Date.now(),
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────
@@ -38,11 +83,36 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString('ms-MY', {
+function formatTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString('ms-MY', {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function loadMessages(): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as ChatMessage[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return [WELCOME_MESSAGE];
+}
+
+function saveMessages(messages: ChatMessage[]) {
+  try {
+    // Keep only last MAX_MESSAGES (always keep welcome if present)
+    const toSave = messages.length > MAX_MESSAGES ? messages.slice(-MAX_MESSAGES) : messages;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch {
+    // ignore storage errors
+  }
 }
 
 // ─── Typing Indicator ──────────────────────────────────────────────────
@@ -56,23 +126,234 @@ function TypingIndicator() {
           <Bot className="size-4 text-emerald-700" />
         </AvatarFallback>
       </Avatar>
-      <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm bg-gray-100 px-4 py-3 dark:bg-gray-800">
-        <span className="typing-dot size-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
-        <span className="typing-dot size-2 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
-        <span className="typing-dot size-2 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-3 dark:from-gray-800 dark:to-gray-800">
+        <span className="typing-dot size-2 animate-bounce rounded-full bg-emerald-400 [animation-delay:0ms]" />
+        <span className="typing-dot size-2 animate-bounce rounded-full bg-emerald-400 [animation-delay:150ms]" />
+        <span className="typing-dot size-2 animate-bounce rounded-full bg-emerald-400 [animation-delay:300ms]" />
       </div>
     </div>
   );
 }
 
-// ─── Component ─────────────────────────────────────────────────────────
+// ─── Empty State ───────────────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="mb-4 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-950/30">
+        <Sparkles className="size-10 text-emerald-500" />
+      </div>
+      <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-gray-200">
+        PUSPA AI Assistant
+      </h3>
+      <p className="max-w-xs text-sm text-muted-foreground">
+        Mulakan perbualan dengan bertanya tentang program, keahlian, atau sumbangan PUSPA.
+      </p>
+    </div>
+  );
+}
+
+// ─── Copy Button ───────────────────────────────────────────────────────
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard not available
+    }
+  }, [text]);
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="flex size-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+      title="Salin mesej"
+    >
+      {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+    </button>
+  );
+}
+
+// ─── Speak Button (TTS) ────────────────────────────────────────────────
+
+function SpeakButton({ text }: { text: string }) {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleSpeak = useCallback(() => {
+    if (!('speechSynthesis' in window)) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    // Strip markdown syntax for TTS
+    const cleanText = text
+      .replace(/#{1,6}\s/g, '')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/`(.*?)`/g, '$1')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/[-*+]\s/g, '')
+      .replace(/\n{2,}/g, '. ')
+      .replace(/\n/g, ', ');
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'ms-MY';
+    utterance.rate = 0.95;
+
+    // Try to find Malay voice
+    const voices = window.speechSynthesis.getVoices();
+    const msVoice = voices.find(
+      (v) => v.lang.startsWith('ms') || v.lang === 'ms-MY'
+    );
+    if (msVoice) {
+      utterance.voice = msVoice;
+    }
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  }, [text, isSpeaking]);
+
+  // If speech synthesis not supported, hide button
+  if (typeof window !== 'undefined' && !('speechSynthesis' in window)) {
+    return null;
+  }
+
+  return (
+    <button
+      onClick={handleSpeak}
+      className={`flex size-7 items-center justify-center rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
+        isSpeaking
+          ? 'text-emerald-500 animate-pulse'
+          : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+      }`}
+      title={isSpeaking ? 'Henti bunyi' : 'Baca mesej'}
+    >
+      {isSpeaking ? <VolumeX className="size-3.5" /> : <Volume2 className="size-3.5" />}
+    </button>
+  );
+}
+
+// ─── Message Bubble ────────────────────────────────────────────────────
+
+function MessageBubble({ message }: { message: ChatMessage }) {
+  const [hovered, setHovered] = useState(false);
+  const isUser = message.role === 'user';
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`flex items-start gap-2.5 group ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+    >
+      {/* Avatar */}
+      {isUser ? (
+        <Avatar className="mt-0.5 size-8 shrink-0 border border-emerald-200">
+          <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/50">
+            <User className="size-4 text-emerald-700 dark:text-emerald-400" />
+          </AvatarFallback>
+        </Avatar>
+      ) : (
+        <Avatar className="mt-0.5 size-8 shrink-0 border border-emerald-200">
+          <AvatarImage src="/puspa-logo.png" alt="PUSPA" />
+          <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/50">
+            <Bot className="size-4 text-emerald-700 dark:text-emerald-400" />
+          </AvatarFallback>
+        </Avatar>
+      )}
+
+      {/* Content */}
+      <div
+        className={`max-w-[80%] space-y-1 ${isUser ? 'items-end' : 'items-start'}`}
+      >
+        <div
+          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+            isUser
+              ? 'rounded-tr-sm bg-emerald-600 text-white dark:bg-emerald-700 dark:text-emerald-50'
+              : 'rounded-tl-sm bg-gradient-to-br from-gray-50 to-gray-100/80 text-gray-900 dark:from-gray-800 dark:to-gray-800/80 dark:text-gray-100'
+          }`}
+        >
+          {isUser ? (
+            <span className="whitespace-pre-wrap">{message.content}</span>
+          ) : (
+            <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-code:rounded prose-code:bg-emerald-100 prose-code:px-1 prose-code:py-0.5 prose-code:text-emerald-800 prose-code:before:content-none prose-code:after:content-none dark:prose-invert dark:prose-code:bg-emerald-900/40 dark:prose-code:text-emerald-300">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
+          )}
+        </div>
+
+        {/* Timestamp & Action Buttons (hover only) */}
+        <div
+          className={`flex items-center gap-1 transition-opacity duration-200 ${
+            isUser ? 'flex-row-reverse' : 'flex-row'
+          } ${hovered ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <span className="text-[10px] text-muted-foreground">
+            {formatTime(message.timestamp)}
+          </span>
+          {!isUser && (
+            <div className="flex items-center gap-0.5">
+              <SpeakButton text={message.content} />
+              <CopyButton text={message.content} />
+            </div>
+          )}
+          {isUser && <CopyButton text={message.content} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────
 
 export default function ChatTab() {
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const messagesInitialized = useRef(false);
+
+  // Initialize messages from localStorage
+  useEffect(() => {
+    if (!messagesInitialized.current) {
+      setMessages(loadMessages());
+      messagesInitialized.current = true;
+    }
+  }, []);
+
+  // Save messages to localStorage on change
+  useEffect(() => {
+    if (messagesInitialized.current) {
+      saveMessages(messages);
+    }
+  }, [messages]);
+
+  // Check speech recognition support
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    setSpeechSupported(!!SpeechRecognition);
+
+    // Pre-load voices for TTS
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+    }
+  }, []);
 
   // Auto-scroll to bottom on new messages or loading state change
   useEffect(() => {
@@ -81,16 +362,27 @@ export default function ChatTab() {
     }
   }, [messages, isLoading]);
 
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
   const handleSend = async (messageText?: string) => {
     const text = (messageText ?? input).trim();
     if (!text || isLoading) return;
 
-    // Add user message
     const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
       content: text,
-      timestamp: new Date(),
+      timestamp: Date.now(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -113,8 +405,9 @@ export default function ChatTab() {
       const aiMessage: ChatMessage = {
         id: generateId(),
         role: 'ai',
-        content: data.reply || 'Maaf, saya tidak dapat menjawab pertanyaan tersebut.',
-        timestamp: new Date(),
+        content:
+          data.reply || 'Maaf, saya tidak dapat menjawab pertanyaan tersebut.',
+        timestamp: Date.now(),
       };
 
       setMessages((prev) => [...prev, aiMessage]);
@@ -124,7 +417,7 @@ export default function ChatTab() {
         role: 'ai',
         content:
           'Maaf, berlaku ralat semasa memproses permintaan anda. Sila cuba lagi sebentar.',
-        timestamp: new Date(),
+        timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -149,6 +442,60 @@ export default function ChatTab() {
     handleSend(question);
   };
 
+  const handleClearHistory = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setMessages([WELCOME_MESSAGE]);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
+
+  // ─── Voice Input (ASR) ────────────────────────────────────────────
+
+  const toggleVoiceInput = useCallback(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    // If already listening, stop
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ms-MY';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setInput(transcript);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, [isListening]);
+
+  const hasOnlyWelcome = messages.length <= 1;
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -164,58 +511,70 @@ export default function ChatTab() {
           </p>
         </div>
         <Sparkles className="size-5 text-emerald-200" />
+
+        {/* Clear History Button */}
+        {!hasOnlyWelcome && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-white/80 hover:bg-white/20 hover:text-white"
+              >
+                <Trash2 className="size-4" />
+                <span className="sr-only">Kosongkan sembang</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3" side="bottom" align="end">
+              <p className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                Kosongkan semua sejarah sembang?
+              </p>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleClearHistory}
+                className="w-full"
+              >
+                <Trash2 className="mr-1.5 size-3.5" />
+                Kosongkan sembang
+              </Button>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1" style={{ maxHeight: 'calc(100vh - 400px)', minHeight: '320px' }}>
-        <div ref={scrollRef} className="space-y-4 p-4">
-          {messages.map((msg) => (
+      <ScrollArea
+        className="flex-1"
+        style={{ maxHeight: 'calc(100vh - 420px)', minHeight: '280px' }}
+      >
+        <div
+          ref={scrollRef}
+          className="relative space-y-4 p-4"
+          style={{
+            backgroundImage: hasOnlyWelcome && !isLoading
+              ? 'none'
+              : undefined,
+          }}
+        >
+          {/* Chat background pattern - subtle dots */}
+          {!hasOnlyWelcome && (
             <div
-              key={msg.id}
-              className={`flex items-start gap-2.5 ${
-                msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-              }`}
-            >
-              {/* Avatar */}
-              {msg.role === 'ai' ? (
-                <Avatar className="mt-0.5 size-8 shrink-0 border border-emerald-200">
-                  <AvatarImage src="/puspa-logo.png" alt="PUSPA" />
-                  <AvatarFallback className="bg-emerald-100">
-                    <Bot className="size-4 text-emerald-700" />
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <Avatar className="mt-0.5 size-8 shrink-0 border border-blue-200">
-                  <AvatarFallback className="bg-blue-100">
-                    <User className="size-4 text-blue-700" />
-                  </AvatarFallback>
-                </Avatar>
-              )}
+              className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle, currentColor 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+            />
+          )}
 
-              {/* Message Bubble */}
-              <div
-                className={`max-w-[75%] space-y-1 ${
-                  msg.role === 'user' ? 'items-end' : 'items-start'
-                }`}
-              >
-                <div
-                  className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'rounded-tr-sm bg-emerald-600 text-white dark:bg-emerald-700'
-                      : 'rounded-tl-sm bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-                <p
-                  className={`text-[10px] text-muted-foreground ${
-                    msg.role === 'user' ? 'text-right' : 'text-left'
-                  }`}
-                >
-                  {formatTime(msg.timestamp)}
-                </p>
-              </div>
-            </div>
+          {/* Empty State */}
+          {hasOnlyWelcome && !isLoading && <EmptyState />}
+
+          {/* Messages */}
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
           ))}
 
           {/* Typing Indicator */}
@@ -223,29 +582,68 @@ export default function ChatTab() {
         </div>
       </ScrollArea>
 
-      {/* Quick Questions */}
-      {messages.length <= 1 && !isLoading && (
-        <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
-            Soalan pantas:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_QUESTIONS.map((q) => (
-              <button
-                key={q}
-                onClick={() => handleQuickQuestion(q)}
-                className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50 hover:border-emerald-300 dark:border-emerald-800 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-950"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+      {/* Quick Questions (Grouped) */}
+      {hasOnlyWelcome && !isLoading && (
+        <div className="space-y-3 border-t border-gray-100 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
+          {QUICK_QUESTIONS.map((group) => (
+            <div key={group.label}>
+              <p className="mb-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                {group.label}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {group.questions.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => handleQuickQuestion(q)}
+                    className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50 hover:border-emerald-300 dark:border-emerald-800 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="border-t border-gray-200 p-3 dark:border-gray-700">
         <div className="flex items-center gap-2">
+          {/* Voice Input Button */}
+          {speechSupported && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleVoiceInput}
+              className={`size-9 shrink-0 transition-colors ${
+                isListening
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400'
+                  : 'text-gray-500 hover:text-emerald-600'
+              }`}
+              title={isListening ? 'Henti mendengar' : 'Input suara'}
+            >
+              {isListening ? (
+                <div className="flex items-center gap-1">
+                  <span className="size-2 animate-pulse rounded-full bg-red-500" />
+                  <MicOff className="size-4" />
+                </div>
+              ) : (
+                <Mic className="size-4" />
+              )}
+              <span className="sr-only">
+                {isListening ? 'Henti mendengar' : 'Input suara'}
+              </span>
+            </Button>
+          )}
+
+          {isListening && (
+            <span className="flex items-center gap-1.5 text-xs text-red-500 dark:text-red-400">
+              <span className="inline-block size-2 animate-pulse rounded-full bg-red-500" />
+              Mendengar...
+            </span>
+          )}
+
           <Input
             ref={inputRef}
             type="text"
