@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "skills": {
+    "slide-deck": {
+      "version": "1.0.0",
+      "installedAt": 1776669851482
+    },
+    "a11y": {
+      "version": "1.0.0",
+      "installedAt": 1776669858624
+    },
+    "a11y-label-audit": {
+      "version": "1.0.0",
+      "installedAt": 1776669864610
+    },
+    "animations": {
+      "version": "1.0.0",
+      "installedAt": 1776669890391
+    }
+  }
+}
