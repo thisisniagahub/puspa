@@ -1,5 +1,5 @@
 // ============================================================
-// PUSPA NGO Management System — Prisma Schema (SQLite)
+// PUSPA NGO Management System — Prisma Schema (PostgreSQL / Supabase)
 // Islamic Charity / Asnaf Case Management
 // ============================================================
 
@@ -8,8 +8,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:../db/puspa.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================
