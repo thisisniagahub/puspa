@@ -267,11 +267,6 @@ export default function HomePage() {
 
   // Theme
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Keyboard shortcut: Ctrl+K / Cmd+K to open command palette
   useEffect(() => {
@@ -371,12 +366,12 @@ export default function HomePage() {
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   aria-label="Toggle theme"
                 >
-                  {mounted && (theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />)}
-                  {!mounted && <Skeleton className="h-4 w-4 rounded" />}
+                  {isClient && (theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />)}
+                  {!isClient && <Skeleton className="h-4 w-4 rounded" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                {mounted ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : 'Toggle theme'}
+                {isClient ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : 'Toggle theme'}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
