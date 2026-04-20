@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -65,7 +66,7 @@ model WelfareAssessment {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  member          Member   @relation(fields: [memberId], references: [id])
+  member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
 }
 
 model CommunicationLog {
@@ -80,7 +81,7 @@ model CommunicationLog {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  member          Member    @relation(fields: [memberId], references: [id])
+  member          Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
 }
 
 model Programme {
@@ -122,8 +123,8 @@ model Donation {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  programme       Programme?   @relation(fields: [programmeId], references: [id])
-  member          Member?      @relation(fields: [memberId], references: [id])
+  programme       Programme?   @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  member          Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
 }
 
 model ProgrammeMember {
@@ -135,8 +136,8 @@ model ProgrammeMember {
   joinedAt        DateTime @default(now())
   notes           String?
 
-  programme       Programme @relation(fields: [programmeId], references: [id])
-  member          Member    @relation(fields: [memberId], references: [id])
+  programme       Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  member          Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@unique([programmeId, memberId])
 }
@@ -150,6 +151,6 @@ model Activity {
   metadata        String?  // JSON
   createdAt       DateTime @default(now())
 
-  programme       Programme? @relation(fields: [programmeId], references: [id])
+  programme       Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
   programmeId     String?
 }
