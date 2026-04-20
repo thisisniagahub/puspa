@@ -105,12 +105,13 @@ export default function Home() {
           <div className="flex items-center justify-between h-16">
             {/* Logo & Brand */}
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/30 overflow-hidden">
+              <div className="relative w-10 h-10">
                 <Image
                   src="/puspa-logo-official.png"
                   alt="PUSPA Logo"
-                  fill
-                  className="object-cover rounded-xl"
+                  width={40}
+                  height={40}
+                  className="object-contain"
                   priority
                 />
               </div>
@@ -285,12 +286,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 overflow-hidden">
+              <div className="relative w-8 h-8">
                 <Image
                   src="/puspa-logo-official.png"
                   alt="PUSPA"
-                  fill
-                  className="object-cover"
+                  width={32}
+                  height={32}
+                  className="object-contain"
                 />
               </div>
               <div>
