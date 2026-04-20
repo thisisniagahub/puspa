@@ -1,329 +1,495 @@
 'use client';
 
-import { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
-import Image from 'next/image';
+import { useState, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+import { useOpenClawStore, type NavigationTab } from '@/store/openclaw-store';
+
+// shadcn/ui
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/tooltip';
+
+// Lucide icons
 import {
   LayoutDashboard,
-  Users,
-  CalendarDays,
-  Heart,
-  Building2,
-  MessageCircle,
+  Server,
+  PackageOpen,
+  Link2,
+  TerminalSquare,
+  Bot,
+  Cpu,
+  Zap,
+  Search,
+  Bell,
   Menu,
-  X,
   Moon,
   Sun,
-  Flower2,
-  FileText,
-  Search,
-  Kanban,
-  Bell,
-  Wrench,
+  Activity,
+  Wifi,
+  WifiOff,
+  ChevronRight,
+  Settings,
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 
-import DashboardTab from '@/components/puspa/dashboard-tab';
-import MembersTab from '@/components/puspa/members-tab';
-import ProgrammesTab from '@/components/puspa/programmes-tab';
-import DonationsTab from '@/components/puspa/donations-tab';
-import AdminTab from '@/components/puspa/admin-tab';
-import ChatTab from '@/components/puspa/chat-tab';
-import AIReportTab from '@/components/puspa/ai-report-tab';
-import ActivitiesKanban from '@/components/puspa/activities-kanban';
-import CommandPalette from '@/components/puspa/command-palette';
-import NotificationBell from '@/components/puspa/notification-bell';
-import MemberToolsTab from '@/components/puspa/member-tools-tab';
+// Section components
+import { DashboardContent } from '@/components/openclaw/dashboard-content';
+import { MCPServersContent } from '@/components/openclaw/mcp-servers-content';
+import { PluginsContent } from '@/components/openclaw/plugins-content';
+import { IntegrationsContent } from '@/components/openclaw/integrations-content';
+import { TerminalContent } from '@/components/openclaw/terminal-content';
+import { AgentsContent } from '@/components/openclaw/agents-content';
+import { ModelsContent } from '@/components/openclaw/models-content';
+import { AutomationContent } from '@/components/openclaw/automation-content';
 
-const tabs = [
-  { id: 'dashboard', label: 'Utama', icon: LayoutDashboard },
-  { id: 'members', label: 'Ahli', icon: Users },
-  { id: 'programmes', label: 'Program', icon: CalendarDays },
-  { id: 'donations', label: 'Donasi', icon: Heart },
-  { id: 'activities', label: 'Aktiviti', icon: Kanban },
-  { id: 'member-tools', label: 'Alat Ahli', icon: Wrench },
-  { id: 'admin', label: 'Pentadbiran', icon: Building2 },
-  { id: 'chat', label: 'AI Chat', icon: MessageCircle },
-  { id: 'report', label: 'Laporan AI', icon: FileText },
-] as const;
+// ---------------------------------------------------------------------------
+// Navigation configuration
+// ---------------------------------------------------------------------------
 
-type TabId = (typeof tabs)[number]['id'];
+interface NavItem {
+  id: NavigationTab;
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+}
 
-export default function Home() {
-  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
-  // Hydration-safe mounted check using useSyncExternalStore
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'mcp-servers', label: 'MCP Servers', icon: Server },
+  { id: 'plugins', label: 'Plugins', icon: PackageOpen },
+  { id: 'integrations', label: 'Integrations', icon: Link2 },
+  { id: 'terminal', label: 'Terminal', icon: TerminalSquare },
+  { id: 'agents', label: 'Agents', icon: Bot },
+  { id: 'models', label: 'Models', icon: Cpu },
+  { id: 'automation', label: 'Automation', icon: Zap },
+];
+
+const TAB_TITLES: Record<NavigationTab, string> = {
+  dashboard: 'Dashboard',
+  'mcp-servers': 'MCP Servers',
+  plugins: 'Plugins',
+  integrations: 'Integrations',
+  terminal: 'Terminal',
+  agents: 'Agents',
+  models: 'Models',
+  automation: 'Automation',
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function formatUptime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 24) {
+    const d = Math.floor(h / 24);
+    const rh = h % 24;
+    return `${d}d ${rh}h`;
+  }
+  return `${h}h ${m}m`;
+}
+
+// ---------------------------------------------------------------------------
+// Loading skeleton
+// ---------------------------------------------------------------------------
+
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen flex bg-background">
+      {/* Sidebar skeleton */}
+      <aside className="hidden md:flex w-[280px] flex-col border-r border-border">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-border">
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-5 w-24 rounded" />
+        </div>
+        <div className="flex-1 p-3 space-y-1">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-lg" />
+          ))}
+        </div>
+        <div className="p-4 border-t border-border space-y-3">
+          <Skeleton className="h-6 w-32 rounded" />
+          <Skeleton className="h-9 w-full rounded-lg" />
+        </div>
+      </aside>
+      {/* Main skeleton */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center gap-4 px-6 h-16 border-b border-border">
+          <Skeleton className="h-5 w-32 rounded" />
+          <Skeleton className="h-9 w-64 rounded-lg ml-auto" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+        </div>
+        <div className="flex-1 p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-48 rounded-xl" />
+        </div>
+      </div>
+    </div>
   );
+}
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+// ---------------------------------------------------------------------------
+// Sidebar content (shared between desktop and mobile sheet)
+// ---------------------------------------------------------------------------
 
-  // Global keyboard shortcut for Command Palette (Ctrl+K / Cmd+K)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCommandOpen((prev) => !prev);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+function SidebarNav({
+  activeTab,
+  onTabChange,
+  collapsed = false,
+}: {
+  activeTab: NavigationTab;
+  onTabChange: (tab: NavigationTab) => void;
+  collapsed?: boolean;
+}) {
+  const { system, setActiveTab } = useOpenClawStore();
+  const { theme, setTheme } = useTheme();
 
-  const handleTabChange = (tab: TabId) => {
+  const handleNavClick = (tab: NavigationTab) => {
     setActiveTab(tab);
-    setMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    onTabChange(tab);
   };
 
-  const handleCommandNavigate = useCallback((tab: string, _itemId?: string) => {
-    handleTabChange(tab as TabId);
-    setCommandOpen(false);
-  }, []);
-
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50/50 via-white to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-      {/* Header */}
-      <header
-        className={cn(
-          'sticky top-0 z-50 w-full transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-purple-100 dark:border-purple-900/30',
-          scrolled && 'shadow-lg shadow-purple-100/20 dark:shadow-black/20'
+    <div className="flex flex-col h-full">
+      {/* Brand */}
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-border/50">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary text-xl">
+          <span role="img" aria-label="OpenClaw logo">
+            🦞
+          </span>
+        </div>
+        {!collapsed && (
+          <div className="flex flex-col">
+            <span className="text-base font-bold tracking-tight text-foreground">
+              OpenClaw
+            </span>
+            <span className="text-[10px] text-muted-foreground leading-tight">
+              AI Agent Platform
+            </span>
+          </div>
         )}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo & Brand */}
-            <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10">
-                <Image
-                  src="/puspa-logo-official.png"
-                  alt="PUSPA Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold bg-gradient-to-r from-purple-700 to-purple-500 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent leading-tight">
-                  PUSPA
-                </span>
-                <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">
-                  Pertubuhan Urus Peduli Asnaf
-                </span>
-              </div>
-              <Badge variant="secondary" className="hidden md:flex bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs ml-1">
-                <Flower2 className="w-3 h-3 mr-1" />
-                Sejak 2018
-              </Badge>
-            </div>
+      </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-0.5">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <TooltipProvider key={item.id} delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
+                    onClick={() => handleNavClick(item.id)}
                     className={cn(
-                      'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200',
+                      'group flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                       isActive
-                        ? 'text-purple-700 dark:text-purple-400'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20'
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     )}
                   >
-                    <Icon className="w-3.5 h-3.5" />
-                    {tab.label}
+                    <Icon
+                      className={cn(
+                        'w-[18px] h-[18px] shrink-0 transition-colors',
+                        isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                      )}
+                    />
+                    {!collapsed && <span>{item.label}</span>}
+                    {!collapsed && isActive && (
+                      <ChevronRight className="ml-auto w-4 h-4 text-primary" />
+                    )}
                     {isActive && (
                       <motion.div
-                        layoutId="activeTab"
-                        className="absolute inset-0 bg-purple-100 dark:bg-purple-900/30 rounded-lg -z-10"
+                        layoutId="sidebar-active"
+                        className="absolute left-0 w-1 h-8 rounded-r-full bg-primary"
                         transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                       />
                     )}
                   </button>
-                );
-              })}
-            </nav>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right" className="font-medium">
+                    {item.label}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
+      </nav>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-1.5">
-              {/* Command Palette Trigger */}
+      {/* Bottom section */}
+      <div className="p-4 border-t border-border/50 space-y-3">
+        {/* Gateway status */}
+        <div className="flex items-center gap-2.5 px-2">
+          <span
+            className={cn(
+              'inline-block w-2 h-2 rounded-full shrink-0',
+              system.gatewayStatus === 'online'
+                ? 'bg-green-500 pulse-dot'
+                : system.gatewayStatus === 'degraded'
+                  ? 'bg-yellow-500'
+                  : 'bg-red-500'
+            )}
+          />
+          <span className="text-xs text-muted-foreground">
+            {system.gatewayStatus === 'online'
+              ? 'Gateway Online'
+              : system.gatewayStatus === 'degraded'
+                ? 'Gateway Degraded'
+                : system.gatewayStatus === 'starting'
+                  ? 'Gateway Starting…'
+                  : 'Gateway Offline'}
+          </span>
+        </div>
+
+        {/* Theme toggle */}
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => setCommandOpen(true)}
-                className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground h-8 px-3 bg-purple-50/50 dark:bg-purple-900/10 border-purple-200/50 dark:border-purple-800/30 hover:bg-purple-100 dark:hover:bg-purple-900/20"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className={cn(
+                  'w-full justify-start gap-2 text-muted-foreground hover:text-foreground',
+                  collapsed && 'justify-center px-0'
+                )}
               >
-                <Search className="w-3.5 h-3.5" />
-                <span>Cari...</span>
-                <kbd className="pointer-events-none ml-1 inline-flex h-5 select-none items-center gap-0.5 rounded border border-muted-foreground/20 bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                  <span className="text-xs">&#8984;</span>K
-                </kbd>
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 shrink-0" />
+                ) : (
+                  <Moon className="w-4 h-4 shrink-0" />
+                )}
+                {!collapsed && <span className="text-xs">Toggle Theme</span>}
               </Button>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right">
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
 
-              {/* Mobile Search Button */}
+        {/* Settings placeholder */}
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="sm:hidden text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                onClick={() => setCommandOpen(true)}
+                size="sm"
+                className={cn(
+                  'w-full justify-start gap-2 text-muted-foreground hover:text-foreground',
+                  collapsed && 'justify-center px-0'
+                )}
               >
-                <Search className="w-4 h-4" />
+                <Settings className="w-4 h-4 shrink-0" />
+                {!collapsed && <span className="text-xs">Settings</span>}
               </Button>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right">Settings</TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </div>
+  );
+}
 
-              {/* Notification Bell */}
-              <NotificationBell />
+// ---------------------------------------------------------------------------
+// System status pill (shown in header)
+// ---------------------------------------------------------------------------
 
-              {/* Theme Toggle */}
-              {mounted && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                >
-                  {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+function SystemStatusPill({ label, value, icon: Icon }: { label: string; value: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }) {
+  return (
+    <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground">
+      <Icon className="w-3.5 h-3.5" />
+      <span className="hidden xl:inline">{label}:</span>
+      <span className="font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Page Component
+// ---------------------------------------------------------------------------
+
+export default function HomePage() {
+  // Hydration guard
+  const subscribe = () => () => {};
+  const getSnapshot = () => true;
+  const getServerSnapshot = () => false;
+  const isClient = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const activeTab = useOpenClawStore((s) => s.activeTab);
+  const system = useOpenClawStore((s) => s.system);
+  const setActiveTab = useOpenClawStore((s) => s.setActiveTab);
+
+  const unreadCount = system.notifications.filter((n) => !n.read).length;
+
+  // Don't render interactive UI on the server to avoid hydration mismatches
+  if (!isClient) {
+    return <LoadingSkeleton />;
+  }
+
+  const handleTabChange = (tab: NavigationTab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen flex bg-background">
+      {/* ================================================================= */}
+      {/* Desktop Sidebar                                                     */}
+      {/* ================================================================= */}
+      <aside className="sidebar-gradient hidden md:flex md:w-[280px] md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-30 border-r border-border/50">
+        <SidebarNav activeTab={activeTab} onTabChange={handleTabChange} />
+      </aside>
+
+      {/* ================================================================= */}
+      {/* Mobile Sidebar (Sheet drawer)                                      */}
+      {/* ================================================================= */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="w-[280px] p-0 sidebar-gradient border-r border-border/50">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Navigation</SheetTitle>
+            <SheetDescription>OpenClaw navigation menu</SheetDescription>
+          </SheetHeader>
+          <SidebarNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </SheetContent>
+      </Sheet>
+
+      {/* ================================================================= */}
+      {/* Main content area                                                  */}
+      {/* ================================================================= */}
+      <div className="flex-1 md:pl-[280px] flex flex-col min-h-screen">
+        {/* Top Header */}
+        <header className="sticky top-0 z-20 flex items-center gap-3 px-4 sm:px-6 h-16 border-b border-border bg-background/80 backdrop-blur-xl">
+          {/* Mobile hamburger */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden shrink-0">
+                <Menu className="w-5 h-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] p-0 sidebar-gradient border-r border-border/50">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation</SheetTitle>
+                <SheetDescription>OpenClaw navigation menu</SheetDescription>
+              </SheetHeader>
+              <SidebarNav activeTab={activeTab} onTabChange={handleTabChange} />
+            </SheetContent>
+          </Sheet>
+
+          {/* Page title */}
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">
+            {TAB_TITLES[activeTab]}
+          </h1>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Search bar */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/60 w-64 lg:w-80 text-muted-foreground text-sm">
+            <Search className="w-4 h-4 shrink-0" />
+            <span className="text-xs">Search agents, servers, plugins…</span>
+            <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center rounded border border-border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <span className="text-xs">&#8984;</span>K
+            </kbd>
+          </div>
+
+          {/* System status indicators */}
+          <SystemStatusPill
+            label="Uptime"
+            value={formatUptime(system.uptime)}
+            icon={Activity}
+          />
+          <SystemStatusPill
+            label="Memory"
+            value={`${system.memoryUsage}%`}
+            icon={Cpu}
+          />
+          <SystemStatusPill
+            label="Connections"
+            value={String(system.activeConnections)}
+            icon={system.gatewayStatus === 'online' ? Wifi : WifiOff}
+          />
+
+          {/* Notification bell */}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative shrink-0">
+                  <Bell className="w-[18px] h-[18px]" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-white leading-none">
+                      {unreadCount}
+                    </span>
+                  )}
+                  <span className="sr-only">
+                    Notifications ({unreadCount} unread)
+                  </span>
                 </Button>
-              )}
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {unreadCount > 0
+                  ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
+                  : 'No new notifications'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </header>
 
-              {/* Mobile Menu Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        {/* Scrollable content area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-            </div>
+                {activeTab === 'dashboard' && <DashboardContent />}
+                {activeTab === 'mcp-servers' && <MCPServersContent />}
+                {activeTab === 'plugins' && <PluginsContent />}
+                {activeTab === 'integrations' && <IntegrationsContent />}
+                {activeTab === 'terminal' && <TerminalContent />}
+                {activeTab === 'agents' && <AgentsContent />}
+                {activeTab === 'models' && <ModelsContent />}
+                {activeTab === 'automation' && <AutomationContent />}
+              </motion.div>
+            </AnimatePresence>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="lg:hidden overflow-hidden border-t border-purple-100 dark:border-purple-900/30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl"
-            >
-              <nav className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-4 gap-1.5">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabChange(tab.id)}
-                      className={cn(
-                        'flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[10px] font-medium transition-all',
-                        isActive
-                          ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                          : 'text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800'
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-
-      {/* Command Palette */}
-      <CommandPalette
-        open={commandOpen}
-        onOpenChange={setCommandOpen}
-        onNavigate={handleCommandNavigate}
-      />
-
-      {/* Main Content */}
-      <main className="flex-1 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-            >
-              {activeTab === 'dashboard' && <DashboardTab />}
-              {activeTab === 'members' && <MembersTab />}
-              {activeTab === 'programmes' && <ProgrammesTab />}
-              {activeTab === 'donations' && <DonationsTab />}
-              {activeTab === 'activities' && <ActivitiesKanban />}
-              {activeTab === 'member-tools' && <MemberToolsTab />}
-              {activeTab === 'admin' && <AdminTab />}
-              {activeTab === 'chat' && <ChatTab />}
-              {activeTab === 'report' && <AIReportTab />}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-auto border-t border-purple-100 dark:border-purple-900/30 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="relative w-8 h-8">
-                <Image
-                  src="/puspa-logo-official.png"
-                  alt="PUSPA"
-                  width={32}
-                  height={32}
-                  className="object-contain"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-purple-700 dark:text-purple-400">
-                  PUSPA
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Transforming Lives Through Compassionate Aid
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <span>2253, Jalan Permata 22, Taman Permata, 53300 Gombak</span>
-              <span className="hidden sm:inline">|</span>
-              <span>salam.puspaKL@gmail.com</span>
-              <span className="hidden sm:inline">|</span>
-              <span>+6012-3183369</span>
-            </div>
-            <div className="text-xs text-muted-foreground text-center md:text-right">
-              <p>&copy; {new Date().getFullYear()} PUSPA. Hak cipta terpelihara.</p>
-              <p className="text-[10px]">
-                Dibangunkan dengan Next.js &amp; AI
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }

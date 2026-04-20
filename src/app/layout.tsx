@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, Inter } from "next/font/google";
+import { Poppins, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -17,32 +17,36 @@ const inter = Inter({
   display: "swap",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "PUSPA - Pertubuhan Urus Peduli Asnaf | Sistem Pengurusan",
+  title: "OpenClaw - AI Agent Platform | Management Dashboard",
   description:
-    "Sistem Pengurusan Ahli PUSPA - Pertubuhan Urus Peduli Asnaf KL & Selangor. Membantu keluarga asnaf melalui program bantuan makanan, pendidikan, latihan kemahiran dan kesihatan.",
+    "OpenClaw unified AI agent management platform - MCP Servers, Plugins, Integrations, Terminal, Multi-Agent Orchestration, and more.",
   keywords: [
-    "PUSPA",
-    "asnaf",
-    "zakat",
-    "kebajikan",
-    "KL",
-    "Selangor",
-    "bantuan makanan",
-    "pendidikan",
+    "OpenClaw",
+    "AI Agent",
+    "MCP Server",
+    "LLM",
+    "Plugin",
+    "Integration",
+    "Terminal",
+    "Multi-Agent",
   ],
-  authors: [{ name: "PUSPA - Pertubuhan Urus Peduli Asnaf" }],
+  authors: [{ name: "OpenClaw" }],
   icons: {
-    icon: "/puspa-logo-official.png",
-    apple: "/puspa-logo-official.png",
+    icon: "/logo.svg",
+    apple: "/logo.svg",
   },
   openGraph: {
-    title: "PUSPA - Sistem Pengurusan Ahli",
-    description:
-      "Sistem Pengurusan Ahli Pertubuhan Urus Peduli Asnaf KL & Selangor",
-    siteName: "PUSPA",
+    title: "OpenClaw - AI Agent Platform",
+    description: "Unified AI agent management and orchestration platform",
+    siteName: "OpenClaw",
     type: "website",
-    locale: "ms_MY",
   },
 };
 
@@ -52,7 +56,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#030712" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a1a" },
   ],
 };
 
@@ -62,9 +66,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ms" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${inter.variable} antialiased bg-background text-foreground`}
+        className={`${poppins.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
           {children}

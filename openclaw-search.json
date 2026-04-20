@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://docs.openclaw.ai/plugins/bundles",
+    "name": "Plugin Bundles - OpenClaw Docs",
+    "snippet": "These are called bundles — content and metadata packs that OpenClaw maps into native features like skills, hooks, and MCP tools. Bundles are not the same as ...",
+    "host_name": "docs.openclaw.ai",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/freema/openclaw-mcp",
+    "name": "MCP server for OpenClaw - secure bridge between Claude  - GitHub",
+    "snippet": "MCP server for OpenClaw - secure bridge between Claude.ai and your self-hosted OpenClaw assistant with OAuth2 authentication - freema/openclaw-mcp.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.openclaw.ai/cli/mcp",
+    "name": "mcp - OpenClaw Docs",
+    "snippet": "mcp. openclaw mcp has two jobs: run OpenClaw as an MCP server with openclaw mcp serve; manage OpenClaw-owned outbound MCP server definitions with list ...",
+    "host_name": "docs.openclaw.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blink.new/blog/openclaw-mcp-model-context-protocol-guide-2026",
+    "name": "OpenClaw MCP Guide: Connect Any Tool with Model Context Protocol",
+    "snippet": "OpenClaw uses MCP to expose a standardized tool-calling interface — instead of proprietary plugins, any MCP-compatible server immediately works ...",
+    "host_name": "blink.new",
+    "rank": 3,
+    "date": "Apr 14, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=n1sfrc-RjyM",
+    "name": "How to Set Up and Use OpenClaw (ClawdBot / MoltBot) - YouTube",
+    "snippet": "... openclaw.ai/ ❤️ Support for this channel comes from our friends at Scrimba – the coding platform that's reinvented interactive learning ... Missing: plugins | Show results with: plugins",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mintlify.com/nyldn/claude-octopus/advanced/openclaw",
+    "name": "OpenClaw integration - Claude Octopus - Mintlify",
+    "snippet": "OpenClaw is an open-source AI assistant framework that connects Claude to messaging platforms, IDEs, and custom interfaces. It provides: Multi-platform ...",
+    "host_name": "mintlify.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://levelup.gitconnected.com/5-openclaw-plugins-that-actually-make-it-production-ready-524168333bac",
+    "name": "5 OpenClaw Plugins That Actually Make It Production-Ready",
+    "snippet": "It runs as an MCP server that sits between OpenClaw and every external app you want the agent to reach. You connect your accounts once ...",
+    "host_name": "levelup.gitconnected.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.eigent.ai/blog/openclaw-vs-claude-code",
+    "name": "OpenClaw vs Claude Code (2026): Computer Use Agent vs AI",
+    "snippet": "OpenClaw is an open-source computer-use AI agent platform that turns large language models into persistent, autonomous digital workers. You self ...",
+    "host_name": "www.eigent.ai",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.facebook.com/groups/vibecodinglife/posts/1972125790042615",
+    "name": "Accessing OpenCLAW features via API? - Facebook",
+    "snippet": "I'm looking for a way to make OpenClaw's features (computer use, browser automation, etc.) accessible via an MCP server or REST API — so other ...",
+    "host_name": "www.facebook.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/CustomAI/comments/1qz4anz/running_openclaw_locally_with_mcp_tools_practical",
+    "name": "Running OpenClaw locally with MCP tools (practical setup guide)",
+    "snippet": "For OpenClaw, setup can be very simple. You can paste the MCP360 endpoint directly and let OpenClaw configure MCP360 automatically using ...",
+    "host_name": "www.reddit.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
