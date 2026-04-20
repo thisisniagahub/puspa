@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { apiSuccess, apiError } from "@/lib/api-response";
+import { hashPassword, createSession } from "@/lib/session";
 import { NextRequest } from "next/server";
 
 export async function POST(_request: NextRequest) {
@@ -10,50 +11,38 @@ export async function POST(_request: NextRequest) {
       return apiSuccess({ message: "Database sudah ada data. Gunakan db:reset untuk reset." });
     }
 
-    // Create users
+    // Hash passwords
+    const [adminPass, opsPass, financePass, volPass] = await Promise.all([
+      hashPassword("admin123"),
+      hashPassword("ops123"),
+      hashPassword("finance123"),
+      hashPassword("volunteer123"),
+    ]);
+
+    // Create users with hashed passwords
     const admin = await db.user.create({
-      data: {
-        email: "admin@puspa.org",
-        name: "Pentadbir PUSPA",
-        password: "$2b$10$placeholder_hashed_password",
-        role: "admin",
-      },
+      data: { email: "admin@puspa.org", name: "Pentadbir PUSPA", password: adminPass, role: "admin" },
     });
 
     const opsUser = await db.user.create({
-      data: {
-        email: "ops@puspa.org",
-        name: "Pegawai Operasi",
-        password: "$2b$10$placeholder_hashed_password",
-        role: "ops",
-      },
+      data: { email: "ops@puspa.org", name: "Pegawai Operasi", password: opsPass, role: "ops" },
     });
 
     const financeUser = await db.user.create({
-      data: {
-        email: "finance@puspa.org",
-        name: "Pegawai Kewangan",
-        password: "$2b$10$placeholder_hashed_password",
-        role: "finance",
-      },
+      data: { email: "finance@puspa.org", name: "Pegawai Kewangan", password: financePass, role: "finance" },
     });
 
     const volunteer = await db.user.create({
-      data: {
-        email: "volunteer@puspa.org",
-        name: "Sukarelawan Ahmad",
-        password: "$2b$10$placeholder_hashed_password",
-        role: "volunteer",
-      },
+      data: { email: "volunteer@puspa.org", name: "Sukarelawan Ahmad", password: volPass, role: "volunteer" },
     });
 
     // Create programmes
     const programmes = await Promise.all([
-      db.programme.create({ data: { code: "PG-001", name: "Program Bantuan Makanan", category: "food_aid", status: "active", totalBudget: 60000, description: "Agihan makanan bulanan kepada asnaf" } }),
-      db.programme.create({ data: { code: "PG-002", name: "Program Pendidikan Anak Asnaf", category: "education", status: "active", totalBudget: 40000, description: "Bantuan yuran persekolahan dan keperluan pembelajaran" } }),
-      db.programme.create({ data: { code: "PG-003", name: "Program Latihan Kemahiran", category: "skills_training", status: "active", totalBudget: 30000, description: "Latihan kemahiran untuk meningkatkan kebolehpasaran" } }),
-      db.programme.create({ data: { code: "PG-004", name: "Program Bantuan Kesihatan", category: "healthcare", status: "active", totalBudget: 25000, description: "Bantuan perubatan dan pemeriksaan kesihatan" } }),
-      db.programme.create({ data: { code: "PG-005", name: "Tabung Kecemasan", category: "emergency_relief", status: "active", totalBudget: 50000, description: "Bantuan kecemasan mangsa bencana dan musibah" } }),
+      db.programme.create({ data: { code: "PG-001", name: "Program Bantuan Makanan", category: "food_aid", status: "active", totalBudget: 60000, description: "Agihan makanan bulanan kepada asnaf", createdBy: admin.id } }),
+      db.programme.create({ data: { code: "PG-002", name: "Program Pendidikan Anak Asnaf", category: "education", status: "active", totalBudget: 40000, description: "Bantuan yuran persekolahan dan keperluan pembelajaran", createdBy: admin.id } }),
+      db.programme.create({ data: { code: "PG-003", name: "Program Latihan Kemahiran", category: "skills_training", status: "active", totalBudget: 30000, description: "Latihan kemahiran untuk meningkatkan kebolehpasaran", createdBy: opsUser.id } }),
+      db.programme.create({ data: { code: "PG-004", name: "Program Bantuan Kesihatan", category: "healthcare", status: "active", totalBudget: 25000, description: "Bantuan perubatan dan pemeriksaan kesihatan", createdBy: opsUser.id } }),
+      db.programme.create({ data: { code: "PG-005", name: "Tabung Kecemasan", category: "emergency_relief", status: "active", totalBudget: 50000, description: "Bantuan kecemasan mangsa bencana dan musibah", createdBy: admin.id } }),
     ]);
 
     // Create sample cases with full lifecycle
@@ -86,8 +75,7 @@ export async function POST(_request: NextRequest) {
           status: "verifying", priority: "urgent", category: "sedekah",
           applicantName: "Osman bin Bakar", applicantIc: "500315-01-9012", applicantPhone: "017-2345678",
           applicantAddress: "No 8, Jalan Kenanga, Seksyen 7, 40000 Shah Alam",
-          householdSize: 2, monthlyIncome: 800, programmeId: programmes[3].id,
-          assignedTo: opsUser.id,
+          householdSize: 2, monthlyIncome: 800, programmeId: programmes[3].id, assignedTo: opsUser.id,
         },
       }),
       db.case.create({
@@ -96,16 +84,28 @@ export async function POST(_request: NextRequest) {
           status: "submitted", priority: "urgent", category: "sedekah",
           applicantName: "Rahim bin Ismail", applicantIc: "950810-01-3456", applicantPhone: "019-8765432",
           applicantAddress: "Kampung Sungai Derhaka, 45000 Kuala Selangor",
-          householdSize: 7, monthlyIncome: 1500, programmeId: programmes[4].id,
+          householdSize: 7, monthlyIncome: 1500, programmeId: programmes[4].id, assignedTo: volunteer.id,
         },
       }),
       db.case.create({
         data: {
           caseNumber: "CS-2025-0005", title: "Latihan Kemahiran Peniagaan", description: "Ingin menyertai program latihan kemahiran peniagaan kecil",
-          status: "draft", priority: "low", category: "wakaf",
+          status: "scored", priority: "low", category: "wakaf",
           applicantName: "Aminah binti Ali", applicantIc: "980512-14-7890", applicantPhone: "014-5678901",
           applicantAddress: "No 22, Jalan Bunga Raya, 43200 Cheras",
-          householdSize: 3, monthlyIncome: 2200, programmeId: programmes[2].id,
+          householdSize: 3, monthlyIncome: 2200, programmeId: programmes[2].id, assignedTo: opsUser.id,
+          verificationScore: 45.0, verifiedBy: opsUser.id, verifiedAt: new Date("2025-07-01"),
+        },
+      }),
+      db.case.create({
+        data: {
+          caseNumber: "CS-2025-0006", title: "Bantuan Kewangan Keluarga Besar", description: "Keluarga 9 orang memerlukan bantuan kewangan bulanan",
+          status: "follow_up", priority: "high", category: "zakat",
+          applicantName: "Kamal bin Zainal", applicantIc: "720120-20-2020", applicantPhone: "019-0123456",
+          applicantAddress: "Kg Fajar, Hulu Klang, 53000 KL",
+          householdSize: 9, monthlyIncome: 750, verificationScore: 88.0,
+          programmeId: programmes[0].id, assignedTo: opsUser.id, verifiedBy: opsUser.id, approvedBy: admin.id,
+          verifiedAt: new Date("2025-05-10"), approvedAt: new Date("2025-05-15"),
         },
       }),
     ]);
@@ -117,15 +117,17 @@ export async function POST(_request: NextRequest) {
       db.caseNote.create({ data: { caseId: cases[0].id, authorId: opsUser.id, type: "assessment", content: "Penilaian kebajikan: Makanan=2, Pendidikan=3, Kesihatan=4, Kewangan=1, Perumahan=3. Skor keseluruhan: 2.6/5. Layak." } }),
       db.caseNote.create({ data: { caseId: cases[2].id, authorId: opsUser.id, type: "note", content: "Memerlukan pengesahan rekod perubatan dari hospital. Jadual pembedahan pada 15 Ogos." } }),
       db.caseNote.create({ data: { caseId: cases[3].id, authorId: volunteer.id, type: "phone_call", content: "Mangsa banjir memerlukan bantuan makanan dan pakaian segera. Keluarga dipindahkan ke pusat pemindahan." } }),
+      db.caseNote.create({ data: { caseId: cases[5].id, authorId: opsUser.id, type: "visit", content: "Susulan bulanan. Keluarga dalam keadaan stabil tetapi masih memerlukan bantuan makanan bulanan." } }),
     ]);
 
     // Create donations
     await Promise.all([
-      db.donation.create({ data: { donorName: "Haji Ismail bin Ahmad", amount: 5000, method: "bank_transfer", status: "confirmed", date: new Date("2025-07-01"), programmeId: programmes[0].id, paymentChannel: "maybank2u", receiptNumber: "RCP-2025-0001" } }),
-      db.donation.create({ data: { donorName: "Puan Siti binti Rahman", amount: 2000, method: "online", status: "confirmed", date: new Date("2025-07-03"), programmeId: programmes[1].id, paymentChannel: "cimb_clicks", isTaxDeductible: true, receiptNumber: "RCP-2025-0002" } }),
-      db.donation.create({ data: { donorName: "Syarikat Tech Sdn Bhd", amount: 10000, method: "bank_transfer", status: "confirmed", date: new Date("2025-07-05"), programmeId: programmes[4].id, donorEmail: "csr@tech.com.my", isTaxDeductible: true, receiptNumber: "RCP-2025-0003" } }),
+      db.donation.create({ data: { donorName: "Haji Ismail bin Ahmad", amount: 5000, method: "bank-transfer", status: "confirmed", date: new Date("2025-07-01"), programmeId: programmes[0].id, paymentChannel: "maybank2u", receiptNumber: "RCP-2025-0001" } }),
+      db.donation.create({ data: { donorName: "Puan Siti binti Rahman", amount: 2000, method: "bank-transfer", status: "confirmed", date: new Date("2025-07-03"), programmeId: programmes[1].id, paymentChannel: "cimb_clicks", isTaxDeductible: true, receiptNumber: "RCP-2025-0002" } }),
+      db.donation.create({ data: { donorName: "Syarikat Tech Sdn Bhd", amount: 10000, method: "bank-transfer", status: "confirmed", date: new Date("2025-07-05"), programmeId: programmes[4].id, donorEmail: "csr@tech.com.my", isTaxDeductible: true, receiptNumber: "RCP-2025-0003" } }),
       db.donation.create({ data: { donorName: "Encik Muhammad", amount: 500, method: "cash", status: "confirmed", date: new Date("2025-07-08"), notes: "Sedekah untuk tabung kecemasan" } }),
-      db.donation.create({ data: { donorName: "Anonymous", amount: 1500, method: "online", status: "pending", date: new Date("2025-07-10"), isAnonymous: true, programmeId: programmes[0].id } }),
+      db.donation.create({ data: { donorName: "Anonymous", amount: 1500, method: "bank-transfer", status: "pending", date: new Date("2025-07-10"), isAnonymous: true, programmeId: programmes[0].id } }),
+      db.donation.create({ data: { donorName: "Perumahan Kinrara Berhad", amount: 25000, method: "bank-transfer", status: "confirmed", date: new Date("2025-06-15"), programmeId: programmes[0].id, donorEmail: "csr@pkb.com.my", isTaxDeductible: true, receiptNumber: "RCP-2025-0004" } }),
     ]);
 
     // Create disbursements
@@ -137,8 +139,7 @@ export async function POST(_request: NextRequest) {
           amount: 1500, method: "bank_transfer", status: "completed",
           bankName: "Maybank", accountNumber: "123456789012", accountHolder: "Siti binti Hassan",
           recipientName: "Siti binti Hassan", recipientIc: "900201-14-5678", recipientPhone: "013-7890123",
-          purpose: "Bantuan yuran sekolah 3 orang anak",
-          processedDate: new Date("2025-06-20"),
+          purpose: "Bantuan yuran sekolah 3 orang anak", processedDate: new Date("2025-06-20"),
         },
       }),
       db.disbursement.create({
@@ -147,21 +148,44 @@ export async function POST(_request: NextRequest) {
           approvedBy: admin.id,
           amount: 500, method: "cash", status: "pending",
           recipientName: "Ahmad bin Abdullah", recipientIc: "850101-01-1234", recipientPhone: "012-3456789",
-          purpose: "Bantuan makanan bulan Julai",
-          scheduledDate: new Date("2025-07-15"),
+          purpose: "Bantuan makanan bulan Julai", scheduledDate: new Date("2025-07-15"),
+        },
+      }),
+      db.disbursement.create({
+        data: {
+          disbursementNumber: "DIS-2025-0003", caseId: cases[5].id, programmeId: programmes[0].id,
+          approvedBy: admin.id, processedBy: financeUser.id,
+          amount: 800, method: "bank_transfer", status: "completed",
+          bankName: "CIMB", accountNumber: "987654321098", accountHolder: "Kamal bin Zainal",
+          recipientName: "Kamal bin Zainal", recipientIc: "720120-20-2020", recipientPhone: "019-0123456",
+          purpose: "Bantuan makanan bulan Jun", processedDate: new Date("2025-06-01"),
         },
       }),
     ]);
 
+    // Create notifications
+    await Promise.all([
+      db.notification.create({ data: { userId: opsUser.id, type: "task_assigned", title: "Kes baru ditugaskan", message: "Kes CS-2025-0004 (Bantuan Kecemasan Banjir) ditugaskan kepada anda.", actionUrl: "/cases" } }),
+      db.notification.create({ data: { userId: opsUser.id, type: "case_updated", title: "Kes perlu verifikasi", message: "Kes CS-2025-0003 memerlukan verifikasi segera.", actionUrl: "/cases" } }),
+      db.notification.create({ data: { userId: financeUser.id, type: "info", title: "Pengagihan menunggu kelulusan", message: "DIS-2025-0002 memerlukan kelulusan.", actionUrl: "/disbursements" } }),
+    ]);
+
     return apiSuccess({
       message: "Database berjaya diisi dengan data sample",
+      demoAccounts: {
+        admin: { email: "admin@puspa.org", password: "admin123" },
+        ops: { email: "ops@puspa.org", password: "ops123" },
+        finance: { email: "finance@puspa.org", password: "finance123" },
+        volunteer: { email: "volunteer@puspa.org", password: "volunteer123" },
+      },
       summary: {
         users: 4,
         programmes: programmes.length,
         cases: cases.length,
-        donations: 5,
-        disbursements: 2,
-        caseNotes: 5,
+        donations: 6,
+        disbursements: 3,
+        caseNotes: 6,
+        notifications: 3,
       },
     });
   } catch (error) {

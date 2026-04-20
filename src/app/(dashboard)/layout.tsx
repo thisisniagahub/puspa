@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { CommandPalette } from "@/components/puspa/command-palette";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 export const metadata: Metadata = {
   title: "PUSPA — Sistem Pengurusan NGO",
@@ -15,15 +16,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <TopBar />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
-      </SidebarInset>
-      <CommandPalette />
-    </SidebarProvider>
+    <AuthGuard>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <TopBar />
+          <main className="flex-1 p-4 md:p-6 lg:p-8">
+            {children}
+          </main>
+        </SidebarInset>
+        <CommandPalette />
+      </SidebarProvider>
+    </AuthGuard>
   );
 }

@@ -1,13 +1,19 @@
 import { db } from "@/lib/db";
-import { apiSuccess, apiCreated, apiError, getPaginationParams, buildPagination } from "@/lib/api-response";
+import { apiSuccess, apiError, getPaginationParams, buildPagination } from "@/lib/api-response";
+import { caseCreateSchema } from "@/lib/validators";
+import { requireAuth, requirePermission, AuthError } from "@/lib/session";
+import { createAuditLog, getClientIp } from "@/lib/audit";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/cases - List cases with search, filter, pagination
 export async function GET(request: NextRequest) {
   try {
+    const session = requireAuth(request);
+    requirePermission(session, "cases:read");
+
     const { searchParams } = new URL(request.url);
     const { page, limit, skip } = getPaginationParams(request);
-    
+
     const search = searchParams.get("search") ?? "";
     const status = searchParams.get("status");
     const priority = searchParams.get("priority");
@@ -16,7 +22,7 @@ export async function GET(request: NextRequest) {
     const assignedTo = searchParams.get("assignedTo");
     const sortBy = searchParams.get("sortBy") ?? "createdAt";
     const sortOrder = searchParams.get("sortOrder") ?? "desc";
-    
+
     const where: Record<string, unknown> = {};
     if (search) {
       where.OR = [
@@ -44,6 +50,9 @@ export async function GET(request: NextRequest) {
         include: {
           programme: { select: { id: true, name: true, code: true } },
           assignee: { select: { id: true, name: true, role: true } },
+          verifier: { select: { id: true, name: true } },
+          approver: { select: { id: true, name: true } },
+          _count: { select: { caseNotes: true, disbursements: true, documents: true } },
         },
       }),
       db.case.count({ where }),
@@ -53,6 +62,7 @@ export async function GET(request: NextRequest) {
       pagination: buildPagination(page, limit, total),
     });
   } catch (error) {
+    if (error instanceof AuthError) return apiError(error.message, error.statusCode);
     console.error("[CASES] GET error:", error);
     return apiError("Gagal memuatkan senarai kes", 500);
   }
@@ -61,16 +71,26 @@ export async function GET(request: NextRequest) {
 // POST /api/v1/cases - Create new case
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const session = requireAuth(request);
+    requirePermission(session, "cases:create");
 
-    // Validate required fields
-    if (!body.applicantName) return apiError("Nama pemohon diperlukan");
-    if (!body.applicantIc) return apiError("No. IC pemohon diperlukan");
-    if (!body.applicantPhone) return apiError("No. telefon diperlukan");
+    const body = await request.json();
+    const parsed = caseCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return apiError(parsed.error.issues[0]?.message ?? "Data tidak sah", 422);
+    }
+
+    const data = parsed.data;
 
     // Check IC uniqueness
-    const existing = await db.case.findUnique({ where: { applicantIc: body.applicantIc } });
+    const existing = await db.case.findUnique({ where: { applicantIc: data.applicantIc } });
     if (existing) return apiError("No. IC sudah wujud dalam sistem", 409);
+
+    // If programmeId is provided, verify it exists
+    if (data.programmeId) {
+      const programme = await db.programme.findUnique({ where: { id: data.programmeId } });
+      if (!programme) return apiError("Program tidak dijumpai", 404);
+    }
 
     // Generate case number: CS-YYYY-XXXX
     const year = new Date().getFullYear();
@@ -79,36 +99,58 @@ export async function POST(request: NextRequest) {
     });
     const caseNumber = `CS-${year}-${String(caseCount + 1).padStart(4, "0")}`;
 
-    // Determine initial status
-    const status = body.submitLater ? "draft" : "submitted";
+    const status = data.submitLater ? "draft" : "submitted";
 
     const newCase = await db.case.create({
       data: {
         caseNumber,
-        title: body.title ?? `Kes ${body.applicantName}`,
-        description: body.description,
+        title: data.title ?? `Kes ${data.applicantName}`,
+        description: data.description,
         status,
-        priority: body.priority ?? "normal",
-        category: body.category ?? "zakat",
-        subcategory: body.subcategory,
-        applicantName: body.applicantName,
-        applicantIc: body.applicantIc,
-        applicantPhone: body.applicantPhone,
-        applicantEmail: body.applicantEmail,
-        applicantAddress: body.applicantAddress,
-        householdSize: body.householdSize ?? 1,
-        monthlyIncome: body.monthlyIncome ?? 0,
-        programmeId: body.programmeId,
-        notes: body.notes,
+        priority: data.priority,
+        category: data.category,
+        subcategory: data.subcategory,
+        applicantName: data.applicantName,
+        applicantIc: data.applicantIc,
+        applicantPhone: data.applicantPhone,
+        applicantEmail: data.applicantEmail || null,
+        applicantAddress: data.applicantAddress,
+        householdSize: data.householdSize,
+        monthlyIncome: data.monthlyIncome,
+        programmeId: data.programmeId,
+        notes: data.notes,
+        assignedTo: session.userId, // Auto-assign to creator
       },
       include: {
-        programme: true,
-        assignee: true,
+        programme: { select: { id: true, name: true, code: true } },
+        assignee: { select: { id: true, name: true, role: true } },
       },
     });
 
-    return apiCreated(newCase, "Kes berjaya dicipta");
+    // Create initial case note
+    await db.caseNote.create({
+      data: {
+        caseId: newCase.id,
+        authorId: session.userId,
+        type: "system",
+        content: status === "submitted"
+          ? `Kes ${caseNumber} berjaya dicipta dan dihantar untuk verifikasi.`
+          : `Kes ${caseNumber} berjaya dicipta sebagai draf.`,
+      },
+    });
+
+    await createAuditLog({
+      userId: session.userId,
+      action: "create",
+      entity: "case",
+      entityId: newCase.id,
+      details: { caseNumber, applicantName: data.applicantName, status },
+      ipAddress: getClientIp(request),
+    });
+
+    return apiSuccess(newCase, { status: 201, message: "Kes berjaya dicipta" });
   } catch (error) {
+    if (error instanceof AuthError) return apiError(error.message, error.statusCode);
     console.error("[CASES] POST error:", error);
     return apiError("Gagal mencipta kes", 500);
   }

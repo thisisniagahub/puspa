@@ -1,28 +1,40 @@
+# PUSPA Worklog
+
 ---
 Task ID: 1
-Agent: Main
-Task: Review docs.openclaw.ai and build OpenClaw AI Agent Platform with MCP Servers, Plugins, Integrations, Terminal
+Agent: Main Agent
+Task: Implement production-ready Prisma schema, API routes, RBAC middleware, Case management service
 
 Work Log:
-- Read and analyzed docs.openclaw.ai (main page, MCP docs, bundles docs, channels docs, models docs, multi-agent docs, apply_patch tool docs)
-- Identified all OpenClaw features: 20+ chat channels, MCP server/client, multi-agent routing, 40+ model providers, plugin system (native + bundles from Codex/Claude/Cursor), skills system, terminal, automation, webhooks, gateway architecture
-- Created comprehensive Zustand store with 8 slices (navigation, MCP servers, plugins, integrations, terminal, agents, models, system) with realistic mock data
-- Built main page layout with dark sidebar navigation, responsive mobile drawer, top header with system metrics
-- Built 8 feature components: Dashboard, MCP Servers, Plugins, Integrations, Terminal, Agents, Models, Automation
-- Applied OpenClaw orange/claw theme (oklch colors), dark sidebar gradient, glass morphism effects
-- Fixed all ESLint errors (0 errors, 0 warnings)
-- Verified page loads with HTTP 200
+- Surveyed entire project: Prisma schema, existing API routes, auth helpers, components, layout, pages
+- Created comprehensive Zod validation schemas for all entities (User, Case, Donation, Programme, Disbursement, CaseNote, Reports)
+- Built session-based auth system with token management, password hashing, and cookie support
+- Created RBAC middleware with route-level permission mapping and role-based access control
+- Implemented 15+ API routes with Zod validation and audit logging:
+  - Auth: login, register, logout, get current user
+  - Cases: CRUD + notes (with workflow transitions)
+  - Donations: CRUD with filtering
+  - Programmes: CRUD with dependency checks
+  - Disbursements: CRUD with status transitions
+  - Users: CRUD (admin-only)
+  - Reports: financial, cases, programme, overview
+  - Audit: log viewer (admin-only)
+  - Stats: dashboard statistics
+  - Seed: database seeding with hashed passwords
+- Created Case Management Service layer with workflow automation, notifications, and auto-logging
+- Built full login page with demo account quick-login buttons
+- Built auth context provider with session persistence
+- Built auth guard component for protected routes
+- Updated dashboard layout with auth protection
+- Updated root page with conditional login/dashboard rendering
+- Created comprehensive Cases CRUD page (1,893 lines) with search, filter, pipeline, create dialog, detail sheet, status transitions, notes timeline
+- Fixed all TypeScript errors in new code
+- Database seeded successfully with 4 users, 5 programmes, 6 cases, 6 donations, 3 disbursements
+- All APIs tested and verified working
 
 Stage Summary:
-- Full OpenClaw-inspired management platform built at / route
-- 8 sections: Dashboard, MCP Servers, Plugins & Skills, Integrations, Terminal, Agents, Models, Automation
-- Key features per section:
-  - Dashboard: Stats grid, gateway status, activity feed, quick actions, model health
-  - MCP Servers: Server cards with transport types, add/edit dialog with STDIO/SSE/HTTP config, test connection
-  - Plugins: Filter chips, plugin grid, install dialog with marketplace, configure sheet, source badges (OpenClaw/Codex/Claude/Cursor)
-  - Integrations: Category tabs (Chat/Models/Webhooks/Storage), configure sheets, quick connect for unconfigured
-  - Terminal: Full terminal emulator with command history, 10+ built-in commands, side panel
-  - Agents: Agent cards, configuration sheet with SOUL.md, model selector, channel bindings, skill allowlist, routing rules
-  - Models: Provider cards, failover chain, specialized model settings, allowlist, provider directory (24 providers)
-  - Automation: 4 sub-tabs (Scheduled/Background/Standing Orders/Webhooks), create dialogs
-- Dev server running at localhost:3000, page returns 200 OK
+- Complete production-ready backend with Zod validation, RBAC, audit logging
+- 4 demo accounts: admin, ops, finance, volunteer (all with hashed passwords)
+- Full case workflow: draft → submitted → verifying → verified → scoring → scored → approved → disbursing → disbursed → follow_up → closed
+- API verified: Login returns token, Stats returns correct data, Cases CRUD with auth protection
+- Frontend: Login page, Dashboard with stats, Cases page with full CRUD

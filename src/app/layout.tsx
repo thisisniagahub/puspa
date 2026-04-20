@@ -3,6 +3,7 @@ import { Poppins, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth-context";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -24,21 +25,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PUSPA - Pertubuhan Urus Peduli Asnaf | Sistem Pengurusan + OpenClaw",
-  description:
-    "Sistem Pengurusan PUSPA dengan integrasi OpenClaw - MCP Servers, Plugins, Integrations, Terminal, Multi-Agent Orchestration.",
-  keywords: [
-    "PUSPA", "asnaf", "zakat", "kebajikan", "OpenClaw", "AI Agent",
-    "MCP Server", "Plugin", "Integration", "Terminal",
-  ],
+  title: "PUSPA - Pertubuhan Urus Peduli Asnaf | Sistem Pengurusan NGO",
+  description: "Platform pengurusan komprehensif untuk Pertubuhan Urus Peduli Asnaf - Case management, donations, programmes, and disbursements.",
+  keywords: ["PUSPA", "asnaf", "zakat", "kebajikan", "NGO", "case management", "charity"],
   authors: [{ name: "PUSPA - Pertubuhan Urus Peduli Asnaf" }],
   icons: {
     icon: "/puspa-logo-official.png",
     apple: "/puspa-logo-official.png",
   },
   openGraph: {
-    title: "PUSPA - Sistem Pengurusan + OpenClaw",
-    description: "Sistem Pengurusan PUSPA dengan integrasi OpenClaw AI Agent Platform",
+    title: "PUSPA - Sistem Pengurusan NGO",
+    description: "Platform pengurusan komprehensif untuk Pertubuhan Urus Peduli Asnaf",
     siteName: "PUSPA",
     type: "website",
     locale: "ms_MY",
@@ -66,7 +63,9 @@ export default function RootLayout({
         className={`${poppins.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
         <Toaster />
       </body>

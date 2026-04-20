@@ -1,7 +1,9 @@
 import { db } from "@/lib/db";
 import { apiSuccess, apiError, apiNotFound } from "@/lib/api-response";
+import { caseUpdateSchema } from "@/lib/validators";
 import { createAuditLog, getClientIp } from "@/lib/audit";
 import { canTransitionCase } from "@/lib/auth";
+import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/cases/[id]
@@ -10,7 +12,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = requireAuth(_request);
+    requirePermission(session, "cases:read");
     const { id } = await params;
+
     const caseData = await db.case.findUnique({
       where: { id },
       include: {
@@ -20,19 +25,31 @@ export async function GET(
         approver: { select: { id: true, name: true } },
         caseNotes: {
           orderBy: { createdAt: "desc" },
-          include: { author: { select: { id: true, name: true } } },
-          take: 20,
+          include: { author: { select: { id: true, name: true, role: true } } },
+          take: 50,
         },
-        disbursements: { orderBy: { createdAt: "desc" } },
+        disbursements: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            processor: { select: { id: true, name: true } },
+          },
+        },
         documents: { orderBy: { createdAt: "desc" } },
+        donations: { orderBy: { date: "desc" }, take: 10 },
         _count: { select: { caseNotes: true, disbursements: true, documents: true } },
       },
     });
 
     if (!caseData) return apiNotFound("Kes tidak dijumpai");
 
-    return apiSuccess(caseData);
+    // Calculate disbursement totals
+    const totalDisbursed = caseData.disbursements
+      .filter(d => d.status === "completed")
+      .reduce((sum, d) => sum + d.amount, 0);
+
+    return apiSuccess({ ...caseData, totalDisbursed });
   } catch (error) {
+    if (error instanceof AuthError) return apiError(error.message, error.statusCode);
     console.error("[CASES] GET by ID error:", error);
     return apiError("Gagal memuatkan kes", 500);
   }
@@ -44,79 +61,130 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = requireAuth(request);
+    requirePermission(session, "cases:update");
     const { id } = await params;
+
     const existing = await db.case.findUnique({ where: { id } });
     if (!existing) return apiNotFound("Kes tidak dijumpai");
 
     const body = await request.json();
+    const parsed = caseUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+      return apiError(parsed.error.issues[0]?.message ?? "Data tidak sah", 422);
+    }
+
+    const data = parsed.data;
 
     // Status transition validation
-    if (body.status && body.status !== existing.status) {
-      if (!canTransitionCase(existing.status, body.status)) {
+    if (data.status && data.status !== existing.status) {
+      if (!canTransitionCase(existing.status, data.status)) {
         const validTransitions = [
           "draft", "submitted", "verifying", "verified", "scoring", "scored",
           "approved", "disbursing", "disbursed", "follow_up", "closed", "rejected",
         ].filter(s => canTransitionCase(existing.status, s));
-
         return apiError(
-          `Transisi status '${existing.status}' → '${body.status}' tidak dibenarkan. Transisi yang sah: ${existing.status} → [${validTransitions.join(", ")}]`,
+          `Transisi '${existing.status}' → '${data.status}' tidak dibenarkan. Sah: [${validTransitions.join(", ")}]`,
           422
         );
       }
     }
 
-    // Build update data (only include fields that are provided)
+    // Build update data
     const updateData: Record<string, unknown> = {};
-    const allowedFields = [
-      "title", "description", "priority", "category", "subcategory",
-      "applicantName", "applicantPhone", "applicantEmail", "applicantAddress",
-      "householdSize", "monthlyIncome", "programmeId", "assignedTo",
-      "notes", "metadata", "rejectionReason",
-    ];
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined && key !== "status") {
+        updateData[key] = value;
       }
     }
 
-    // Handle status transitions with timestamps
-    if (body.status) {
-      updateData.status = body.status;
-      if (body.status === "verified") updateData.verifiedAt = new Date();
-      if (body.status === "approved") updateData.approvedAt = new Date();
-      if (body.status === "closed") updateData.closedAt = new Date();
-      if (body.status === "follow_up") updateData.followUpDate = body.followUpDate ?? new Date();
+    // Handle status transitions with timestamps and role-based checks
+    if (data.status) {
+      updateData.status = data.status;
+
+      // Role-based checks for specific transitions
+      if (["verified", "verifying"].includes(data.status)) {
+        requirePermission(session, "cases:verify");
+        if (data.status === "verified") {
+          updateData.verifiedAt = new Date();
+          updateData.verifiedBy = session.userId;
+        }
+      }
+      if (["approved", "disbursing"].includes(data.status)) {
+        requirePermission(session, "cases:approve");
+        if (data.status === "approved") {
+          updateData.approvedAt = new Date();
+          updateData.approvedBy = session.userId;
+        }
+      }
+      if (data.status === "disbursing") {
+        requirePermission(session, "cases:disburse");
+      }
+      if (data.status === "closed") {
+        updateData.closedAt = new Date();
+      }
+      if (data.status === "follow_up") {
+        updateData.followUpDate = data.followUpDate ? new Date(data.followUpDate) : new Date();
+      }
+      if (data.status === "rejected") {
+        if (!data.rejectionReason) {
+          return apiError("Sebab penolakan diperlukan", 422);
+        }
+      }
     }
 
-    // Handle assignment fields
-    if (body.verifiedBy) updateData.verifiedBy = body.verifiedBy;
-    if (body.approvedBy) updateData.approvedBy = body.approvedBy;
-    if (body.verificationScore !== undefined) updateData.verificationScore = body.verificationScore;
+    if (data.verificationScore !== undefined) updateData.verificationScore = data.verificationScore;
 
     const updated = await db.case.update({
       where: { id },
       data: updateData,
       include: {
-        programme: true,
-        assignee: { select: { id: true, name: true } },
+        programme: { select: { id: true, name: true, code: true } },
+        assignee: { select: { id: true, name: true, role: true } },
         verifier: { select: { id: true, name: true } },
         approver: { select: { id: true, name: true } },
       },
     });
 
+    // Auto-create status change note
+    if (data.status && data.status !== existing.status) {
+      const noteMessages: Record<string, string> = {
+        submitted: `Kes dihantar untuk verifikasi oleh ${session.name}.`,
+        verifying: `Proses verifikasi dimulakan oleh ${session.name}.`,
+        verified: `Kes disahkan oleh ${session.name}.`,
+        scoring: `Penilaian dimulakan oleh ${session.name}.`,
+        scored: `Penilaian selesai oleh ${session.name}. Skor: ${data.verificationScore ?? "N/A"}/100.`,
+        approved: `Kes diluluskan oleh ${session.name}.`,
+        disbursing: `Proses pengagihan dimulakan oleh ${session.name}.`,
+        disbursed: `Pengagihan telah dilengkapkan.`,
+        follow_up: `Kes memerlukan susulan. Tarikh susulan: ${data.followUpDate ? new Date(data.followUpDate).toLocaleDateString("ms-MY") : "N/A"}.`,
+        closed: `Kes ditutup oleh ${session.name}.`,
+        rejected: `Kes ditolak oleh ${session.name}. Sebab: ${data.rejectionReason}`,
+      };
+
+      await db.caseNote.create({
+        data: {
+          caseId: id,
+          authorId: session.userId,
+          type: "status_change",
+          content: noteMessages[data.status] ?? `Status diubah ke '${data.status}' oleh ${session.name}.`,
+        },
+      });
+    }
+
     // Audit log
     await createAuditLog({
-      userId: body.userId,
-      action: body.status !== existing.status ? "status_change" : "update",
+      userId: session.userId,
+      action: data.status !== existing.status ? "status_change" : "update",
       entity: "case",
       entityId: id,
-      details: { from: existing.status, to: body.status ?? existing.status, fields: Object.keys(updateData) },
+      details: { from: existing.status, to: data.status ?? existing.status, fields: Object.keys(data) },
       ipAddress: getClientIp(request),
     });
 
     return apiSuccess(updated, "Kes berjaya dikemaskini");
   } catch (error) {
+    if (error instanceof AuthError) return apiError(error.message, error.statusCode);
     console.error("[CASES] PATCH error:", error);
     return apiError("Gagal mengemaskini kes", 500);
   }
@@ -128,11 +196,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = requireAuth(request);
+    requirePermission(session, "cases:delete");
     const { id } = await params;
+
     const existing = await db.case.findUnique({ where: { id } });
     if (!existing) return apiNotFound("Kes tidak dijumpai");
 
-    // Only draft/submitted/rejected cases can be deleted
     if (!["draft", "submitted", "rejected"].includes(existing.status)) {
       return apiError("Hanya kes dalam draf/hantaran/ditolak boleh dipadam", 422);
     }
@@ -140,15 +210,17 @@ export async function DELETE(
     await db.case.delete({ where: { id } });
 
     await createAuditLog({
-      userId: undefined,
+      userId: session.userId,
       action: "delete",
       entity: "case",
       entityId: id,
+      details: { caseNumber: existing.caseNumber },
       ipAddress: getClientIp(request),
     });
 
     return apiSuccess({ message: "Kes berjaya dipadam" });
   } catch (error) {
+    if (error instanceof AuthError) return apiError(error.message, error.statusCode);
     console.error("[CASES] DELETE error:", error);
     return apiError("Gagal memadam kes", 500);
   }
