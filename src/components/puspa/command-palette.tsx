@@ -115,8 +115,8 @@ export default function CommandPalette({
         ]);
 
       setMembers(membersRes.data || []);
-      setProgrammes(programmesRes.data || []);
-      setDonations(donationsRes.data || []);
+      setProgrammes(programmesRes.programmes || programmesRes.data || []);
+      setDonations(donationsRes.donations || donationsRes.data || []);
       setActivities(activitiesRes.data || []);
     } catch (error) {
       console.error('Failed to fetch command palette data:', error);

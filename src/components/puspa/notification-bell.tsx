@@ -14,7 +14,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import { ms } from 'date-fns/locale';
 import { toast } from 'sonner';
 
 interface NotificationBellProps {
@@ -78,7 +77,7 @@ function getTypeLabel(type: string) {
 function formatTimeAgo(dateStr: string): string {
   try {
     const date = new Date(dateStr);
-    return formatDistanceToNow(date, { addSuffix: true, locale: ms });
+    return formatDistanceToNow(date, { addSuffix: true });
   } catch {
     return 'Baru sahaja';
   }

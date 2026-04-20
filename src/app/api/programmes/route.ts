@@ -55,13 +55,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     return NextResponse.json({
-      data: programmes,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      programmes,
+      total,
+      page,
+      limit,
     });
   } catch (error) {
     console.error('Error fetching programmes:', error);

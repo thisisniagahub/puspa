@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       where.method = method;
     }
 
-    const [donations, total] = await Promise.all([
+    const [donations, total, allDonations] = await Promise.all([
       db.donation.findMany({
         where: Object.keys(where).length > 0 ? where : undefined,
         orderBy: { date: 'desc' },
@@ -42,16 +42,34 @@ export async function GET(request: NextRequest) {
       db.donation.count({
         where: Object.keys(where).length > 0 ? where : undefined,
       }),
+      // For summary: get all donations regardless of filter
+      db.donation.findMany({
+        select: { amount: true, date: true, donorName: true, status: true },
+      }),
     ]);
 
+    // Build summary
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const confirmedDonations = allDonations.filter(d => d.status === 'confirmed');
+    const totalDonationAmount = confirmedDonations.reduce((s, d) => s + d.amount, 0);
+    const thisMonthDonations = allDonations
+      .filter(d => d.status === 'confirmed' && new Date(d.date) >= startOfMonth)
+      .reduce((s, d) => s + d.amount, 0);
+    const uniqueDonors = new Set(allDonations.filter(d => d.status === 'confirmed').map(d => d.donorName));
+
+    const summary = {
+      totalDonations: Math.round(totalDonationAmount * 100) / 100,
+      thisMonthDonations: Math.round(thisMonthDonations * 100) / 100,
+      totalDonors: uniqueDonors.size,
+    };
+
     return NextResponse.json({
-      data: donations,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      donations,
+      total,
+      page,
+      limit,
+      summary,
     });
   } catch (error) {
     console.error('Error fetching donations:', error);

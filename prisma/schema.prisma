@@ -44,8 +44,43 @@ model Member {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  donations      Donation[]
-  programmeMembers ProgrammeMember[]
+  donations            Donation[]
+  programmeMembers     ProgrammeMember[]
+  welfareAssessments   WelfareAssessment[]
+  communicationLogs    CommunicationLog[]
+}
+
+model WelfareAssessment {
+  id              String   @id @default(cuid())
+  memberId        String
+  foodSecurity    Int      @default(3)
+  education       Int      @default(3)
+  healthcare      Int      @default(3)
+  financial       Int      @default(3)
+  housing         Int      @default(3)
+  overallScore    Float    @default(3.0)
+  notes           String?
+  assessedBy      String?
+  assessedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  member          Member   @relation(fields: [memberId], references: [id])
+}
+
+model CommunicationLog {
+  id              String    @id @default(cuid())
+  memberId        String
+  type            String    @default("phone")
+  summary         String
+  followUpNeeded  Boolean   @default(false)
+  followUpDate    DateTime?
+  priority        String    @default("normal")
+  conductedBy     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  member          Member    @relation(fields: [memberId], references: [id])
 }
 
 model Programme {

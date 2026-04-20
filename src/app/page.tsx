@@ -22,6 +22,7 @@ import {
   Search,
   Kanban,
   Bell,
+  Wrench,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -35,6 +36,7 @@ import AIReportTab from '@/components/puspa/ai-report-tab';
 import ActivitiesKanban from '@/components/puspa/activities-kanban';
 import CommandPalette from '@/components/puspa/command-palette';
 import NotificationBell from '@/components/puspa/notification-bell';
+import MemberToolsTab from '@/components/puspa/member-tools-tab';
 
 const tabs = [
   { id: 'dashboard', label: 'Utama', icon: LayoutDashboard },
@@ -42,6 +44,7 @@ const tabs = [
   { id: 'programmes', label: 'Program', icon: CalendarDays },
   { id: 'donations', label: 'Donasi', icon: Heart },
   { id: 'activities', label: 'Aktiviti', icon: Kanban },
+  { id: 'member-tools', label: 'Alat Ahli', icon: Wrench },
   { id: 'admin', label: 'Pentadbiran', icon: Building2 },
   { id: 'chat', label: 'AI Chat', icon: MessageCircle },
   { id: 'report', label: 'Laporan AI', icon: FileText },
@@ -272,6 +275,7 @@ export default function Home() {
               {activeTab === 'programmes' && <ProgrammesTab />}
               {activeTab === 'donations' && <DonationsTab />}
               {activeTab === 'activities' && <ActivitiesKanban />}
+              {activeTab === 'member-tools' && <MemberToolsTab />}
               {activeTab === 'admin' && <AdminTab />}
               {activeTab === 'chat' && <ChatTab />}
               {activeTab === 'report' && <AIReportTab />}

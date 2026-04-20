@@ -158,3 +158,35 @@ Stage Summary:
 - Data Export component provides reusable CSV download capability for members, donations, and programmes
 - Activities Kanban board enables visual activity management with drag-and-drop between status columns
 - Both components are 'use client', use shadcn UI components, Lucide icons, and follow existing PUSPA patterns
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Build advanced member tools (Tab "Alat Ahli") for PUSPA system
+
+Work Log:
+- Updated prisma/schema.prisma with 2 new models: WelfareAssessment and CommunicationLog
+- Added welfareAssessments and communicationLogs relations to Member model
+- Ran db:push to apply schema changes to SQLite database
+- Created 6 API routes:
+  - POST /api/members/tools/eligibility — AI-powered programme eligibility check using z-ai-web-dev-sdk (DeepSeek)
+  - POST /api/members/tools/aid-calculator — BMT-like financial aid calculation (poverty line RM2,960, family multiplier)
+  - GET /api/members/tools/welfare/[memberId] — Retrieve welfare assessments with history
+  - POST /api/members/tools/welfare — Create new welfare assessment with auto-calculated overallScore
+  - GET /api/members/tools/communication/[memberId] — Retrieve communication logs
+  - POST /api/members/tools/communication — Create communication log with validation
+- Created comprehensive member-tools-tab.tsx frontend component with 5 sections:
+  1. Member Selector — dropdown to select from database members with quick info badges
+  2. Programme Eligibility AI — AI analysis with match scores, animated progress bars, green/yellow/red indicators
+  3. Financial Aid Calculator — income/family/category inputs, visual gauge meter, detailed breakdown table
+  4. Welfare Assessment — 5 sliders (1-5) for food security, education, healthcare, financial, housing; color-coded score display; assessment history
+  5. Communication Log — timeline view with type icons, priority badges, follow-up indicators; dialog form for adding new records
+- Updated page.tsx: added Wrench icon import, MemberToolsTab component import, new tab in tabs array, rendering case
+- All text in Bahasa Melayu throughout
+- All lint checks pass cleanly, dev server compiles without errors
+
+Stage Summary:
+- Advanced member tools tab fully functional with AI eligibility checking, financial aid calculator, welfare assessment, and communication logging
+- WelfareAssessment and CommunicationLog models added to Prisma schema
+- Clean emerald theme consistency with existing PUSPA design
+- Responsive layout with 2-column grid on desktop, full-width cards where appropriate
