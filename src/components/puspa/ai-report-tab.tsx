@@ -641,7 +641,7 @@ export default function AIReportTab() {
           </Button>
           <Button
             onClick={handleGenerate}
-            className="bg-purple-600 hover:bg-purple-700 text-white min-w-[200px]"
+            className="bg-purple-600 hover:bg-purple-700 text-white sm:min-w-[200px]"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             Jana Laporan {typeLabel}

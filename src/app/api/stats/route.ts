@@ -140,8 +140,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard statistics' },
+      { error: 'Failed to fetch dashboard statistics', details: message },
       { status: 500 }
     );
   }

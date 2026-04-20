@@ -347,7 +347,7 @@ export default function AdminTab() {
             </div>
             <button
               onClick={() => handleCopy('562209677503')}
-              className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+              className="flex items-center gap-1.5 rounded-md border border-gray-200 min-h-[44px] px-3 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
             >
               {copied ? (
                 <>

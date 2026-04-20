@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
     if (search) {
-      where.donorName = { contains: search };
+      where.donorName = { contains: search, mode: 'insensitive' };
     }
     if (status) {
       where.status = status;
@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
       total,
       page,
       limit,
+      totalPages: Math.ceil(total / limit),
       summary,
     });
   } catch (error) {

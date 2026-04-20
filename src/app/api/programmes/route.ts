@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
     if (search) {
-      where.name = { contains: search };
+      where.name = { contains: search, mode: 'insensitive' };
     }
     if (category) {
       where.category = category;
@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
       total,
       page,
       limit,
+      totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
     console.error('Error fetching programmes:', error);

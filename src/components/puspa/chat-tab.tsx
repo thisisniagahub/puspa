@@ -171,7 +171,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="flex size-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+      className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
       title="Salin mesej"
     >
       {copied ? <Check className="size-3.5 text-purple-500" /> : <Copy className="size-3.5" />}
@@ -232,7 +232,7 @@ function SpeakButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleSpeak}
-      className={`flex size-7 items-center justify-center rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
+      className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
         isSpeaking
           ? 'text-purple-500 animate-pulse'
           : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -595,7 +595,7 @@ export default function ChatTab() {
                   <button
                     key={q}
                     onClick={() => handleQuickQuestion(q)}
-                    className="rounded-full border border-purple-200 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 hover:border-purple-300 dark:border-purple-800 dark:bg-gray-900 dark:text-purple-400 dark:hover:bg-purple-950"
+                    className="rounded-full border border-purple-200 bg-white min-h-[44px] px-4 py-2 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 hover:border-purple-300 dark:border-purple-800 dark:bg-gray-900 dark:text-purple-400 dark:hover:bg-purple-950"
                   >
                     {q}
                   </button>
