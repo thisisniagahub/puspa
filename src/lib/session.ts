@@ -9,8 +9,8 @@ import { ROLES, type UserRole, hasPermission, type Permission } from "@/lib/auth
 const TOKEN_SECRET = process.env.TOKEN_SECRET ?? "puspa-session-secret-change-in-production";
 const TOKEN_EXPIRY_HOURS = 24;
 
-// In-memory token store (for this SQLite setup)
-// In production, this would be Redis or a database table
+// In-memory token store
+// Note: Sessions reset on each serverless cold start (acceptable for demo)
 const activeSessions = new Map<string, SessionData>();
 
 interface SessionData {
