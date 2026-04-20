@@ -60,12 +60,8 @@ export default function Home() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid calling setState directly in effect body
-  if (typeof window !== 'undefined' && !mounted) {
-    setMounted(true);
-  }
-
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
