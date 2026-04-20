@@ -24,29 +24,24 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenClaw - AI Agent Platform | Management Dashboard",
+  title: "PUSPA - Pertubuhan Urus Peduli Asnaf | Sistem Pengurusan + OpenClaw",
   description:
-    "OpenClaw unified AI agent management platform - MCP Servers, Plugins, Integrations, Terminal, Multi-Agent Orchestration, and more.",
+    "Sistem Pengurusan PUSPA dengan integrasi OpenClaw - MCP Servers, Plugins, Integrations, Terminal, Multi-Agent Orchestration.",
   keywords: [
-    "OpenClaw",
-    "AI Agent",
-    "MCP Server",
-    "LLM",
-    "Plugin",
-    "Integration",
-    "Terminal",
-    "Multi-Agent",
+    "PUSPA", "asnaf", "zakat", "kebajikan", "OpenClaw", "AI Agent",
+    "MCP Server", "Plugin", "Integration", "Terminal",
   ],
-  authors: [{ name: "OpenClaw" }],
+  authors: [{ name: "PUSPA - Pertubuhan Urus Peduli Asnaf" }],
   icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
+    icon: "/puspa-logo-official.png",
+    apple: "/puspa-logo-official.png",
   },
   openGraph: {
-    title: "OpenClaw - AI Agent Platform",
-    description: "Unified AI agent management and orchestration platform",
-    siteName: "OpenClaw",
+    title: "PUSPA - Sistem Pengurusan + OpenClaw",
+    description: "Sistem Pengurusan PUSPA dengan integrasi OpenClaw AI Agent Platform",
+    siteName: "PUSPA",
     type: "website",
+    locale: "ms_MY",
   },
 };
 
@@ -66,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ms" suppressHydrationWarning>
       <body
         className={`${poppins.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground`}
       >
