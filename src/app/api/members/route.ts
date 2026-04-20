@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Record<string, unknown> = {};
     if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
+      where.name = { contains: search };
     }
     if (category) {
       where.category = category;
