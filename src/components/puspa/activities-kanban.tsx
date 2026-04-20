@@ -95,9 +95,9 @@ const KANBAN_COLUMNS: {
   {
     id: 'selesai',
     title: 'Selesai',
-    headerColor: 'text-emerald-700 dark:text-emerald-400',
-    accentBorder: 'border-t-emerald-500',
-    dotColor: 'bg-emerald-500',
+    headerColor: 'text-purple-700 dark:text-purple-400',
+    accentBorder: 'border-t-purple-500',
+    dotColor: 'bg-purple-500',
   },
   {
     id: 'dibatalkan',
@@ -121,8 +121,8 @@ const TYPE_BADGE: Record<
   donation: {
     label: 'Sumbangan',
     className:
-      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
-    borderClass: 'border-l-emerald-500',
+      'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+    borderClass: 'border-l-purple-500',
   },
   member: {
     label: 'Ahli',
@@ -381,7 +381,7 @@ function KanbanSkeleton() {
               ? '#f59e0b'
               : col.dotColor.includes('blue')
                 ? '#3b82f6'
-                : col.dotColor.includes('emerald')
+                : col.dotColor.includes('purple')
                   ? '#10b981'
                   : '#f43f5e',
           }}

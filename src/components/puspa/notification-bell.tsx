@@ -34,7 +34,7 @@ function getActivityIcon(type: string) {
     case 'programme':
       return <CalendarCheck className="h-4 w-4 text-blue-500" />;
     case 'donation':
-      return <Heart className="h-4 w-4 text-emerald-500" />;
+      return <Heart className="h-4 w-4 text-purple-500" />;
     case 'member':
       return <UserPlus className="h-4 w-4 text-purple-500" />;
     case 'system':
@@ -49,7 +49,7 @@ function getIconBg(type: string) {
     case 'programme':
       return 'bg-blue-100 dark:bg-blue-900/30';
     case 'donation':
-      return 'bg-emerald-100 dark:bg-emerald-900/30';
+      return 'bg-purple-100 dark:bg-purple-900/30';
     case 'member':
       return 'bg-purple-100 dark:bg-purple-900/30';
     case 'system':
@@ -143,7 +143,7 @@ export default function NotificationBell({ count: externalCount }: NotificationB
         <Button
           variant="ghost"
           size="icon"
-          className="relative text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+          className="relative text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
           aria-label="Notifikasi"
         >
           <Bell className="h-4 w-4" />
@@ -172,7 +172,7 @@ export default function NotificationBell({ count: externalCount }: NotificationB
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <Bell className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             <h3 className="text-sm font-semibold">Notifikasi</h3>
             {unreadCount > 0 && (
               <Badge
@@ -222,7 +222,7 @@ export default function NotificationBell({ count: externalCount }: NotificationB
                     key={activity.id}
                     className={cn(
                       'group flex items-start gap-3 rounded-lg px-3 py-3 transition-colors cursor-default',
-                      'hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10'
+                      'hover:bg-purple-50/50 dark:hover:bg-purple-900/10'
                     )}
                   >
                     {/* Icon */}
@@ -269,7 +269,7 @@ export default function NotificationBell({ count: externalCount }: NotificationB
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                className="w-full text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 onClick={handleViewAll}
               >
                 Lihat semua notifikasi

@@ -208,7 +208,7 @@ export default function CommandPalette({
                       value={`member-${member.name}-${member.icNumber}`}
                       onSelect={() => handleSelect('members', member.id)}
                     >
-                      <Users className="mr-2 h-4 w-4 text-emerald-500" />
+                      <Users className="mr-2 h-4 w-4 text-purple-500" />
                       <span className="flex-1 truncate">{member.name}</span>
                       <span className="text-xs text-muted-foreground ml-2">
                         {member.category === 'asnaf' ? 'Asnaf' : 'Pemohon'}
@@ -235,7 +235,7 @@ export default function CommandPalette({
                       <span
                         className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                           programme.status === 'active'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                             : programme.status === 'completed'
                               ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                               : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
@@ -290,7 +290,7 @@ export default function CommandPalette({
                         {activity.type === 'programme' ? (
                           <CalendarDays className="h-4 w-4 text-blue-500" />
                         ) : activity.type === 'donation' ? (
-                          <Heart className="h-4 w-4 text-emerald-500" />
+                          <Heart className="h-4 w-4 text-purple-500" />
                         ) : activity.type === 'member' ? (
                           <Users className="h-4 w-4 text-purple-500" />
                         ) : (

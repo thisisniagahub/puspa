@@ -94,7 +94,7 @@ interface StatsData {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PIE_COLORS: Record<string, string> = {
-  asnaf: '#10b981',
+  asnaf: '#9b59b6',
   volunteer: '#3b82f6',
   donor: '#f59e0b',
   staff: '#8b5cf6',
@@ -109,7 +109,7 @@ const ACTIVITY_TYPE_STYLES: Record<
     icon: CalendarCheck,
   },
   donation: {
-    className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+    className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800',
     icon: Heart,
   },
   member: {
@@ -131,7 +131,7 @@ const QUICK_STATS = [
     label: 'Families Supported',
     value: '5,000+',
     icon: Building2,
-    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950',
+    color: 'text-purple-600 bg-purple-50 dark:bg-purple-950',
   },
   {
     label: 'Years of Service',
@@ -185,7 +185,7 @@ function DonationTooltip({
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md">
       <p className="text-sm font-medium">{label}</p>
-      <p className="text-sm text-emerald-600 font-semibold">
+      <p className="text-sm text-purple-600 font-semibold">
         {formatCurrency(payload[0].value)}
       </p>
       {payload[0].payload?.count > 0 && (
@@ -463,8 +463,8 @@ export default function DashboardTab() {
           title="Total Ahli Asnaf"
           value={stats.membersByCategory.asnaf.toLocaleString()}
           icon={Users}
-          iconBg="bg-emerald-50 dark:bg-emerald-950"
-          iconColor="text-emerald-600"
+          iconBg="bg-purple-50 dark:bg-purple-950"
+          iconColor="text-purple-600"
           description={`${stats.totalMembers} total members`}
           delay={0}
         />
@@ -508,7 +508,7 @@ export default function DashboardTab() {
           <Card className="h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-emerald-600" />
+                <BarChart3 className="h-5 w-5 text-purple-600" />
                 <CardTitle className="text-base sm:text-lg">
                   Donation Trend
                 </CardTitle>
@@ -547,7 +547,7 @@ export default function DashboardTab() {
                     <Tooltip content={<DonationTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.4)' }} />
                     <Bar
                       dataKey="amount"
-                      fill="#10b981"
+                      fill="#9b59b6"
                       radius={[4, 4, 0, 0]}
                       maxBarSize={48}
                     />
@@ -571,7 +571,7 @@ export default function DashboardTab() {
           <Card className="h-full">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <PieChartIcon className="h-5 w-5 text-emerald-600" />
+                <PieChartIcon className="h-5 w-5 text-purple-600" />
                 <CardTitle className="text-base sm:text-lg">
                   Members by Category
                 </CardTitle>
@@ -627,7 +627,7 @@ export default function DashboardTab() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-emerald-600" />
+              <Clock className="h-5 w-5 text-purple-600" />
               <CardTitle className="text-base sm:text-lg">
                 Recent Activities
               </CardTitle>
@@ -764,7 +764,7 @@ export default function DashboardTab() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.55 }}
         >
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-4 sm:px-6 sm:py-5 text-white shadow-lg">
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-purple-800 px-5 py-4 sm:px-6 sm:py-5 text-white shadow-lg">
             {/* Decorative background circles */}
             <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
             <div className="absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-white/10" />
@@ -773,7 +773,7 @@ export default function DashboardTab() {
               <div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  <p className="text-sm font-medium text-emerald-100">
+                  <p className="text-sm font-medium text-purple-100">
                     Total Beneficiaries Reached
                   </p>
                 </div>
@@ -781,7 +781,7 @@ export default function DashboardTab() {
                   {stats.totalBeneficiaries.toLocaleString()}
                 </p>
               </div>
-              <div className="text-xs sm:text-sm text-emerald-100 text-right">
+              <div className="text-xs sm:text-sm text-purple-100 text-right">
                 Across all programmes
               </div>
             </div>

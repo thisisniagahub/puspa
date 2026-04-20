@@ -93,21 +93,21 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50/50 via-white to-amber-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50/50 via-white to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Header */}
       <header
         className={cn(
-          'sticky top-0 z-50 w-full transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-emerald-100 dark:border-emerald-900/30',
-          scrolled && 'shadow-lg shadow-emerald-100/20 dark:shadow-black/20'
+          'sticky top-0 z-50 w-full transition-all duration-300 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-purple-100 dark:border-purple-900/30',
+          scrolled && 'shadow-lg shadow-purple-100/20 dark:shadow-black/20'
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Brand */}
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-emerald-900/30 overflow-hidden">
+              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-200 dark:shadow-purple-900/30 overflow-hidden">
                 <Image
-                  src="/puspa-logo.png"
+                  src="/puspa-logo-official.png"
                   alt="PUSPA Logo"
                   fill
                   className="object-cover rounded-xl"
@@ -115,14 +115,14 @@ export default function Home() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold bg-gradient-to-r from-emerald-700 to-emerald-500 dark:from-emerald-400 dark:to-emerald-300 bg-clip-text text-transparent leading-tight">
+                <span className="text-lg font-bold bg-gradient-to-r from-purple-700 to-purple-500 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent leading-tight">
                   PUSPA
                 </span>
                 <span className="text-[10px] text-muted-foreground leading-tight hidden sm:block">
                   Pertubuhan Urus Peduli Asnaf
                 </span>
               </div>
-              <Badge variant="secondary" className="hidden md:flex bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs ml-1">
+              <Badge variant="secondary" className="hidden md:flex bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-xs ml-1">
                 <Flower2 className="w-3 h-3 mr-1" />
                 Sejak 2018
               </Badge>
@@ -140,8 +140,8 @@ export default function Home() {
                     className={cn(
                       'relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200',
                       isActive
-                        ? 'text-emerald-700 dark:text-emerald-400'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                        ? 'text-purple-700 dark:text-purple-400'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20'
                     )}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -149,7 +149,7 @@ export default function Home() {
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg -z-10"
+                        className="absolute inset-0 bg-purple-100 dark:bg-purple-900/30 rounded-lg -z-10"
                         transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                       />
                     )}
@@ -165,7 +165,7 @@ export default function Home() {
                 variant="outline"
                 size="sm"
                 onClick={() => setCommandOpen(true)}
-                className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground h-8 px-3 bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-800/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/20"
+                className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground h-8 px-3 bg-purple-50/50 dark:bg-purple-900/10 border-purple-200/50 dark:border-purple-800/30 hover:bg-purple-100 dark:hover:bg-purple-900/20"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Cari...</span>
@@ -178,7 +178,7 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="sm:hidden text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                className="sm:hidden text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 onClick={() => setCommandOpen(true)}
               >
                 <Search className="w-4 h-4" />
@@ -193,7 +193,7 @@ export default function Home() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                  className="text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 >
                   {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </Button>
@@ -203,7 +203,7 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-purple-50 dark:hover:bg-purple-900/20"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -220,7 +220,7 @@ export default function Home() {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden overflow-hidden border-t border-emerald-100 dark:border-emerald-900/30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl"
+              className="lg:hidden overflow-hidden border-t border-purple-100 dark:border-purple-900/30 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl"
             >
               <nav className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-4 gap-1.5">
                 {tabs.map((tab) => {
@@ -233,7 +233,7 @@ export default function Home() {
                       className={cn(
                         'flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[10px] font-medium transition-all',
                         isActive
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                          ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
                           : 'text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
@@ -281,24 +281,24 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-emerald-100 dark:border-emerald-900/30 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl">
+      <footer className="mt-auto border-t border-purple-100 dark:border-purple-900/30 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 overflow-hidden">
+              <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 overflow-hidden">
                 <Image
-                  src="/puspa-logo.png"
+                  src="/puspa-logo-official.png"
                   alt="PUSPA"
                   fill
                   className="object-cover"
                 />
               </div>
               <div>
-                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                <p className="text-sm font-semibold text-purple-700 dark:text-purple-400">
                   PUSPA
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Pertubuhan Urus Peduli Asnaf KL &amp; Selangor
+                  Transforming Lives Through Compassionate Aid
                 </p>
               </div>
             </div>

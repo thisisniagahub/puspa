@@ -120,16 +120,16 @@ function saveMessages(messages: ChatMessage[]) {
 function TypingIndicator() {
   return (
     <div className="flex items-start gap-2.5">
-      <Avatar className="mt-0.5 size-8 shrink-0 border border-emerald-200">
-        <AvatarImage src="/puspa-logo.png" alt="PUSPA" />
-        <AvatarFallback className="bg-emerald-100">
-          <Bot className="size-4 text-emerald-700" />
+      <Avatar className="mt-0.5 size-8 shrink-0 border border-purple-200">
+        <AvatarImage src="/puspa-logo-official.png" alt="PUSPA" />
+        <AvatarFallback className="bg-purple-100">
+          <Bot className="size-4 text-purple-700" />
         </AvatarFallback>
       </Avatar>
       <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm bg-gradient-to-br from-gray-50 to-gray-100 px-4 py-3 dark:from-gray-800 dark:to-gray-800">
-        <span className="typing-dot size-2 animate-bounce rounded-full bg-emerald-400 [animation-delay:0ms]" />
-        <span className="typing-dot size-2 animate-bounce rounded-full bg-emerald-400 [animation-delay:150ms]" />
-        <span className="typing-dot size-2 animate-bounce rounded-full bg-emerald-400 [animation-delay:300ms]" />
+        <span className="typing-dot size-2 animate-bounce rounded-full bg-purple-400 [animation-delay:0ms]" />
+        <span className="typing-dot size-2 animate-bounce rounded-full bg-purple-400 [animation-delay:150ms]" />
+        <span className="typing-dot size-2 animate-bounce rounded-full bg-purple-400 [animation-delay:300ms]" />
       </div>
     </div>
   );
@@ -140,8 +140,8 @@ function TypingIndicator() {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="mb-4 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-950/30">
-        <Sparkles className="size-10 text-emerald-500" />
+      <div className="mb-4 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-950/30">
+        <Sparkles className="size-10 text-purple-500" />
       </div>
       <h3 className="mb-1 text-lg font-semibold text-gray-800 dark:text-gray-200">
         PUSPA AI Assistant
@@ -174,7 +174,7 @@ function CopyButton({ text }: { text: string }) {
       className="flex size-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
       title="Salin mesej"
     >
-      {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+      {copied ? <Check className="size-3.5 text-purple-500" /> : <Copy className="size-3.5" />}
     </button>
   );
 }
@@ -234,7 +234,7 @@ function SpeakButton({ text }: { text: string }) {
       onClick={handleSpeak}
       className={`flex size-7 items-center justify-center rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
         isSpeaking
-          ? 'text-emerald-500 animate-pulse'
+          ? 'text-purple-500 animate-pulse'
           : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
       }`}
       title={isSpeaking ? 'Henti bunyi' : 'Baca mesej'}
@@ -258,16 +258,16 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     >
       {/* Avatar */}
       {isUser ? (
-        <Avatar className="mt-0.5 size-8 shrink-0 border border-emerald-200">
-          <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/50">
-            <User className="size-4 text-emerald-700 dark:text-emerald-400" />
+        <Avatar className="mt-0.5 size-8 shrink-0 border border-purple-200">
+          <AvatarFallback className="bg-purple-100 dark:bg-purple-900/50">
+            <User className="size-4 text-purple-700 dark:text-purple-400" />
           </AvatarFallback>
         </Avatar>
       ) : (
-        <Avatar className="mt-0.5 size-8 shrink-0 border border-emerald-200">
-          <AvatarImage src="/puspa-logo.png" alt="PUSPA" />
-          <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900/50">
-            <Bot className="size-4 text-emerald-700 dark:text-emerald-400" />
+        <Avatar className="mt-0.5 size-8 shrink-0 border border-purple-200">
+          <AvatarImage src="/puspa-logo-official.png" alt="PUSPA" />
+          <AvatarFallback className="bg-purple-100 dark:bg-purple-900/50">
+            <Bot className="size-4 text-purple-700 dark:text-purple-400" />
           </AvatarFallback>
         </Avatar>
       )}
@@ -279,14 +279,14 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
             isUser
-              ? 'rounded-tr-sm bg-emerald-600 text-white dark:bg-emerald-700 dark:text-emerald-50'
+              ? 'rounded-tr-sm bg-purple-600 text-white dark:bg-purple-700 dark:text-purple-50'
               : 'rounded-tl-sm bg-gradient-to-br from-gray-50 to-gray-100/80 text-gray-900 dark:from-gray-800 dark:to-gray-800/80 dark:text-gray-100'
           }`}
         >
           {isUser ? (
             <span className="whitespace-pre-wrap">{message.content}</span>
           ) : (
-            <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-code:rounded prose-code:bg-emerald-100 prose-code:px-1 prose-code:py-0.5 prose-code:text-emerald-800 prose-code:before:content-none prose-code:after:content-none dark:prose-invert dark:prose-code:bg-emerald-900/40 dark:prose-code:text-emerald-300">
+            <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-code:rounded prose-code:bg-purple-100 prose-code:px-1 prose-code:py-0.5 prose-code:text-purple-800 prose-code:before:content-none prose-code:after:content-none dark:prose-invert dark:prose-code:bg-purple-900/40 dark:prose-code:text-purple-300">
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           )}
@@ -499,18 +499,18 @@ export default function ChatTab() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 rounded-t-xl border-b border-gray-200 bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-3 dark:border-gray-700">
+      <div className="flex items-center gap-3 rounded-t-xl border-b border-gray-200 bg-gradient-to-r from-purple-600 to-purple-500 px-4 py-3 dark:border-gray-700">
         <div className="flex size-9 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
           <MessageCircle className="size-5 text-white" />
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold text-white">PUSPA AI Assistant</h3>
-          <p className="flex items-center gap-1.5 text-xs text-emerald-100">
-            <span className="inline-block size-1.5 rounded-full bg-emerald-300" />
+          <p className="flex items-center gap-1.5 text-xs text-purple-100">
+            <span className="inline-block size-1.5 rounded-full bg-purple-300" />
             Dalam talian
           </p>
         </div>
-        <Sparkles className="size-5 text-emerald-200" />
+        <Sparkles className="size-5 text-purple-200" />
 
         {/* Clear History Button */}
         {!hasOnlyWelcome && (
@@ -587,7 +587,7 @@ export default function ChatTab() {
         <div className="space-y-3 border-t border-gray-100 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50">
           {QUICK_QUESTIONS.map((group) => (
             <div key={group.label}>
-              <p className="mb-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              <p className="mb-1.5 text-xs font-semibold text-purple-700 dark:text-purple-400">
                 {group.label}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -595,7 +595,7 @@ export default function ChatTab() {
                   <button
                     key={q}
                     onClick={() => handleQuickQuestion(q)}
-                    className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50 hover:border-emerald-300 dark:border-emerald-800 dark:bg-gray-900 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                    className="rounded-full border border-purple-200 bg-white px-3 py-1.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-50 hover:border-purple-300 dark:border-purple-800 dark:bg-gray-900 dark:text-purple-400 dark:hover:bg-purple-950"
                   >
                     {q}
                   </button>
@@ -619,7 +619,7 @@ export default function ChatTab() {
               className={`size-9 shrink-0 transition-colors ${
                 isListening
                   ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400'
-                  : 'text-gray-500 hover:text-emerald-600'
+                  : 'text-gray-500 hover:text-purple-600'
               }`}
               title={isListening ? 'Henti mendengar' : 'Input suara'}
             >
@@ -658,7 +658,7 @@ export default function ChatTab() {
             type="submit"
             size="icon"
             disabled={!input.trim() || isLoading}
-            className="size-9 shrink-0 bg-emerald-600 hover:bg-emerald-700"
+            className="size-9 shrink-0 bg-purple-600 hover:bg-purple-700"
           >
             <Send className="size-4" />
             <span className="sr-only">Hantar</span>

@@ -158,13 +158,13 @@ const priorityConfig: Record<string, { label: string; className: string }> = {
 function getScoreColor(score: number): string {
   if (score < 2.5) return 'text-red-600 dark:text-red-400';
   if (score < 3.5) return 'text-amber-600 dark:text-amber-400';
-  return 'text-emerald-600 dark:text-emerald-400';
+  return 'text-purple-600 dark:text-purple-400';
 }
 
 function getScoreBg(score: number): string {
   if (score < 2.5) return 'bg-red-100 dark:bg-red-900/30';
   if (score < 3.5) return 'bg-amber-100 dark:bg-amber-900/30';
-  return 'bg-emerald-100 dark:bg-emerald-900/30';
+  return 'bg-purple-100 dark:bg-purple-900/30';
 }
 
 function getScoreLabel(score: number): string {
@@ -176,13 +176,13 @@ function getScoreLabel(score: number): string {
 }
 
 function getMatchColor(score: number): string {
-  if (score >= 80) return 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
+  if (score >= 80) return 'text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20';
   if (score >= 60) return 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20';
   return 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20';
 }
 
 function getMatchBarColor(score: number): string {
-  if (score >= 80) return 'bg-emerald-500';
+  if (score >= 80) return 'bg-purple-500';
   if (score >= 60) return 'bg-amber-500';
   return 'bg-red-500';
 }
@@ -514,8 +514,8 @@ export default function MemberToolsTab() {
         {/* Page Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-              <Wrench className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/30">
+              <Wrench className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Alat Ahli</h1>
@@ -527,10 +527,10 @@ export default function MemberToolsTab() {
         </div>
 
         {/* Member Selector Card */}
-        <Card className="border-emerald-200/50 dark:border-emerald-800/30">
+        <Card className="border-purple-200/50 dark:border-purple-800/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               Pilih Ahli
             </CardTitle>
             <CardDescription>Pilih ahli untuk menggunakan alat bantu yang tersedia</CardDescription>
@@ -575,8 +575,8 @@ export default function MemberToolsTab() {
       {/* Page Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-            <Wrench className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/30">
+            <Wrench className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Alat Ahli</h1>
@@ -588,7 +588,7 @@ export default function MemberToolsTab() {
       </div>
 
       {/* Member Selector & Info */}
-      <Card className="border-emerald-200/50 dark:border-emerald-800/30">
+      <Card className="border-purple-200/50 dark:border-purple-800/30">
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1 w-full sm:w-auto">
@@ -642,7 +642,7 @@ export default function MemberToolsTab() {
       {/* Tools Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ─── Programme Eligibility AI ───────────────────────────────── */}
-        <Card className="border-emerald-200/50 dark:border-emerald-800/30 lg:col-span-2">
+        <Card className="border-purple-200/50 dark:border-purple-800/30 lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -657,7 +657,7 @@ export default function MemberToolsTab() {
               <Button
                 onClick={handleEligibilityCheck}
                 disabled={eligibilityLoading}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
               >
                 {eligibilityLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -671,7 +671,7 @@ export default function MemberToolsTab() {
           <CardContent>
             {eligibilityLoading && (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
                 <p className="text-sm text-muted-foreground">AI sedang menganalisis kelayakan...</p>
               </div>
             )}
@@ -684,8 +684,8 @@ export default function MemberToolsTab() {
               >
                 {/* Summary */}
                 {eligibilityResult.summary && (
-                  <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30">
-                    <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                  <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/30">
+                    <p className="text-sm text-purple-800 dark:text-purple-300">
                       {eligibilityResult.summary}
                     </p>
                   </div>
@@ -732,7 +732,7 @@ export default function MemberToolsTab() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-500" />
+                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-purple-500" />
                     <p className="text-sm">Tiada program baru yang layak untuk ahli ini pada masa ini.</p>
                   </div>
                 )}
@@ -749,7 +749,7 @@ export default function MemberToolsTab() {
         </Card>
 
         {/* ─── Financial Aid Calculator ──────────────────────────────── */}
-        <Card className="border-emerald-200/50 dark:border-emerald-800/30">
+        <Card className="border-purple-200/50 dark:border-purple-800/30">
           <CardHeader>
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
@@ -847,7 +847,7 @@ export default function MemberToolsTab() {
                           : aidResult.category.category === 'sederhana'
                             ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                             : aidResult.category.category === 'rendah'
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                               : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                     }`}
                   >
@@ -870,7 +870,7 @@ export default function MemberToolsTab() {
                             ? 'bg-gradient-to-r from-orange-400 to-orange-600'
                             : aidResult.recommendedMonthlyAid >= 1000
                               ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-                              : 'bg-gradient-to-r from-emerald-400 to-emerald-600'
+                              : 'bg-gradient-to-r from-purple-400 to-purple-600'
                       }`}
                       initial={{ width: 0 }}
                       animate={{
@@ -902,7 +902,7 @@ export default function MemberToolsTab() {
                     {aidResult.breakdown.tambahanKeperluanKhas > 0 && (
                       <>
                         <span className="text-muted-foreground">Keperluan khas:</span>
-                        <span className="text-right font-medium text-emerald-600 dark:text-emerald-400">
+                        <span className="text-right font-medium text-purple-600 dark:text-purple-400">
                           +RM{aidResult.breakdown.tambahanKeperluanKhas}
                         </span>
                       </>
@@ -915,7 +915,7 @@ export default function MemberToolsTab() {
         </Card>
 
         {/* ─── Welfare Assessment ─────────────────────────────────────── */}
-        <Card className="border-emerald-200/50 dark:border-emerald-800/30">
+        <Card className="border-purple-200/50 dark:border-purple-800/30">
           <CardHeader>
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30">
@@ -930,7 +930,7 @@ export default function MemberToolsTab() {
           <CardContent className="space-y-4">
             {welfareLoadingHistory ? (
               <div className="flex justify-center py-4">
-                <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
               </div>
             ) : (
               <>
@@ -1031,7 +1031,7 @@ export default function MemberToolsTab() {
                                   ? 'bg-red-500'
                                   : wh.overallScore < 3.5
                                     ? 'bg-amber-500'
-                                    : 'bg-emerald-500'
+                                    : 'bg-purple-500'
                               }`}
                             />
                             <span className="text-muted-foreground">{formatShortDate(wh.createdAt)}</span>
@@ -1050,7 +1050,7 @@ export default function MemberToolsTab() {
         </Card>
 
         {/* ─── Communication Log ──────────────────────────────────────── */}
-        <Card className="border-emerald-200/50 dark:border-emerald-800/30 lg:col-span-2">
+        <Card className="border-purple-200/50 dark:border-purple-800/30 lg:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1158,7 +1158,7 @@ export default function MemberToolsTab() {
                           }
                           className={
                             commForm.followUpNeeded
-                              ? 'bg-emerald-600 hover:bg-emerald-700'
+                              ? 'bg-purple-600 hover:bg-purple-700'
                               : ''
                           }
                         >

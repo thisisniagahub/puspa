@@ -158,7 +158,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; className: string }> = {
   asnaf: {
     label: 'Asnaf',
     className:
-      'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+      'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300',
   },
   volunteer: {
     label: 'Sukarela',
@@ -181,7 +181,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   active: {
     label: 'Aktif',
     className:
-      'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+      'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-300',
   },
   inactive: {
     label: 'Tidak Aktif',
@@ -322,8 +322,8 @@ function MemberCardSkeleton() {
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="rounded-full bg-emerald-50 p-4 mb-4 dark:bg-emerald-950">
-        <Users className="h-10 w-10 text-emerald-400" />
+      <div className="rounded-full bg-purple-50 p-4 mb-4 dark:bg-purple-950">
+        <Users className="h-10 w-10 text-purple-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-1">
         {hasFilters ? 'Tiada ahli dijumpai' : 'Tiada ahli lagi'}
@@ -488,12 +488,12 @@ function MemberFormDialog({
           <DialogTitle className="flex items-center gap-2">
             {isEditing ? (
               <>
-                <Edit className="h-5 w-5 text-emerald-600" />
+                <Edit className="h-5 w-5 text-purple-600" />
                 Edit Maklumat Ahli
               </>
             ) : (
               <>
-                <Plus className="h-5 w-5 text-emerald-600" />
+                <Plus className="h-5 w-5 text-purple-600" />
                 Tambah Ahli Baru
               </>
             )}
@@ -510,7 +510,7 @@ function MemberFormDialog({
             {/* Personal Info Section */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <UserCircle className="h-4 w-4 text-emerald-600" />
+                <UserCircle className="h-4 w-4 text-purple-600" />
                 Maklumat Peribadi
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -602,7 +602,7 @@ function MemberFormDialog({
             {/* Category & Status */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-emerald-600" />
+                <Users className="h-4 w-4 text-purple-600" />
                 Kategori &amp; Status
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -668,7 +668,7 @@ function MemberFormDialog({
             {/* Financial Info */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-emerald-600" />
+                <DollarSign className="h-4 w-4 text-purple-600" />
                 Maklumat Kewangan
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -736,7 +736,7 @@ function MemberFormDialog({
               <Button
                 type="submit"
                 disabled={submitting}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isEditing ? 'Simpan Perubahan' : 'Tambah Ahli'}
@@ -822,8 +822,8 @@ function ViewMemberDialogContent({ memberId }: { memberId: string }) {
     <div className="space-y-6">
       {/* Profile Header */}
       <div className="flex items-start gap-4">
-        <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-950">
-          <UserCircle className="h-8 w-8 text-emerald-600" />
+        <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
+          <UserCircle className="h-8 w-8 text-purple-600" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold text-foreground truncate">
@@ -910,10 +910,10 @@ function ViewMemberDialogContent({ memberId }: { memberId: string }) {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-foreground flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-emerald-600" />
+                <DollarSign className="h-4 w-4 text-purple-600" />
                 Sejarah Sumbangan
               </span>
-              <span className="text-xs font-normal text-emerald-600">
+              <span className="text-xs font-normal text-purple-600">
                 Jumlah: {formatCurrency(totalDonations)}
               </span>
             </h4>
@@ -943,7 +943,7 @@ function ViewMemberDialogContent({ memberId }: { memberId: string }) {
           <Separator />
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <UsersRound className="h-4 w-4 text-emerald-600" />
+              <UsersRound className="h-4 w-4 text-purple-600" />
               Penyertaan Program
             </h4>
             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -984,7 +984,7 @@ function ViewMemberDialog({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-emerald-600" />
+            <Eye className="h-5 w-5 text-purple-600" />
             Maklumat Terperinci Ahli
           </DialogTitle>
           <DialogDescription>
@@ -1102,8 +1102,8 @@ function MemberMobileCard({
       <CardContent className="p-4 space-y-3">
         {/* Name & IC */}
         <div className="flex items-start gap-3">
-          <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-950 shrink-0">
-            <UserCircle className="h-5 w-5 text-emerald-600" />
+          <div className="rounded-full bg-purple-100 p-2 dark:bg-purple-950 shrink-0">
+            <UserCircle className="h-5 w-5 text-purple-600" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate">{member.name}</h3>
@@ -1290,7 +1290,7 @@ export default function MembersTab() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Users className="h-7 w-7 text-emerald-600" />
+            <Users className="h-7 w-7 text-purple-600" />
             Pengurusan Ahli
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -1300,14 +1300,14 @@ export default function MembersTab() {
         <div className="flex items-center gap-3">
           <Badge
             variant="secondary"
-            className="h-7 px-3 text-sm font-medium bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
+            className="h-7 px-3 text-sm font-medium bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800"
           >
             <Users className="h-3.5 w-3.5" />
             {totalMembers} Ahli
           </Badge>
           <Button
             onClick={handleAdd}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Tambah Ahli
@@ -1436,15 +1436,15 @@ export default function MembersTab() {
                 {members.map((m, index) => (
                   <TableRow
                     key={m.id}
-                    className="hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors"
+                    className="hover:bg-purple-50/50 dark:hover:bg-purple-950/20 transition-colors"
                   >
                     <TableCell className="text-muted-foreground text-xs">
                       {(page - 1) * limit + index + 1}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2.5">
-                        <div className="rounded-full bg-emerald-100 p-1 dark:bg-emerald-950 shrink-0">
-                          <UserCircle className="h-4 w-4 text-emerald-600" />
+                        <div className="rounded-full bg-purple-100 p-1 dark:bg-purple-950 shrink-0">
+                          <UserCircle className="h-4 w-4 text-purple-600" />
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium text-foreground truncate max-w-[180px]">
@@ -1474,7 +1474,7 @@ export default function MembersTab() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-emerald-600"
+                          className="h-8 w-8 text-muted-foreground hover:text-purple-600"
                           onClick={() => handleView(m)}
                           title="Lihat butiran"
                         >

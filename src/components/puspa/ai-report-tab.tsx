@@ -56,11 +56,11 @@ const REPORT_CARDS: ReportCard[] = [
     title: 'Ringkasan Organisasi',
     description: 'Gambaran menyeluruh organisasi termasuk ahli, program, sumbangan dan aktiviti',
     icon: Building2,
-    color: 'emerald',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
-    borderColor: 'border-emerald-200 dark:border-emerald-800',
-    textColor: 'text-emerald-700 dark:text-emerald-400',
-    badgeColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+    color: 'purple',
+    bgColor: 'bg-purple-50 dark:bg-purple-950/30',
+    borderColor: 'border-purple-200 dark:border-purple-800',
+    textColor: 'text-purple-700 dark:text-purple-400',
+    badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
     badgeText: 'Overview',
   },
   {
@@ -145,9 +145,9 @@ function ReportLoadingSkeleton() {
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         >
-          <Sparkles className="w-6 h-6 text-emerald-600" />
+          <Sparkles className="w-6 h-6 text-purple-600" />
         </motion.div>
-        <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+        <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
           AI sedang menjana laporan...
         </span>
       </div>
@@ -191,7 +191,7 @@ function ReportLoadingSkeleton() {
 
 function ReportContent({ content }: { content: string }) {
   return (
-    <div className="prose prose-emerald dark:prose-invert max-w-none">
+    <div className="prose prose-purple dark:prose-invert max-w-none">
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );
@@ -324,7 +324,7 @@ export default function AIReportTab() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-200/40 dark:shadow-emerald-900/30">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg shadow-purple-200/40 dark:shadow-purple-900/30">
             <FileText className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -338,7 +338,7 @@ export default function AIReportTab() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
             <Sparkles className="w-3 h-3 mr-1" />
             AI-Powered
           </Badge>
@@ -403,11 +403,11 @@ export default function AIReportTab() {
             </div>
 
             {/* Custom Report Prompt */}
-            <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+            <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <CardTitle className="text-base text-emerald-800 dark:text-emerald-300">
+                  <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <CardTitle className="text-base text-purple-800 dark:text-purple-300">
                     Laporan Khas
                   </CardTitle>
                 </div>
@@ -421,7 +421,7 @@ export default function AIReportTab() {
                   onChange={(e) => setCustomPrompt(e.target.value)}
                   placeholder="Contoh: Sediakan laporan tentang trend sumbangan 6 bulan terakhir dengan cadangan strategi pengumpulan dana..."
                   rows={3}
-                  className="border-emerald-200 dark:border-emerald-800 bg-white dark:bg-gray-900 resize-none"
+                  className="border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-900 resize-none"
                 />
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
@@ -437,7 +437,7 @@ export default function AIReportTab() {
                       }
                     }}
                     disabled={!customPrompt.trim()}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     <Sparkles className="w-4 h-4 mr-1.5" />
                     Jana Laporan
@@ -461,7 +461,7 @@ export default function AIReportTab() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <History className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <History className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     <CardTitle className="text-lg">Sejarah Laporan</CardTitle>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
@@ -498,10 +498,10 @@ export default function AIReportTab() {
                         <div
                           key={item.id}
                           onClick={() => handleLoadHistory(item)}
-                          className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 cursor-pointer transition-colors"
+                          className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 cursor-pointer transition-colors"
                         >
-                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0 mt-0.5">
-                            <Icon className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30 shrink-0 mt-0.5">
+                            <Icon className="h-4 w-4 text-purple-700 dark:text-purple-400" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
@@ -557,7 +557,7 @@ export default function AIReportTab() {
               <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-200/40 dark:shadow-emerald-900/30 shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg shadow-purple-200/40 dark:shadow-purple-900/30 shrink-0">
                       <FileText className="h-5 w-5 text-white" />
                     </div>
                     <div className="min-w-0">
@@ -641,7 +641,7 @@ export default function AIReportTab() {
           </Button>
           <Button
             onClick={handleGenerate}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[200px]"
+            className="bg-purple-600 hover:bg-purple-700 text-white min-w-[200px]"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             Jana Laporan {typeLabel}

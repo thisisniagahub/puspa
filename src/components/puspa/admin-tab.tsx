@@ -72,12 +72,12 @@ interface Partner {
 }
 
 const partners: Partner[] = [
-  { name: 'S P Setia Foundation', icon: <Landmark className="size-6 text-emerald-600" /> },
-  { name: 'Perumahan Kinrara Berhad', icon: <Building2 className="size-6 text-emerald-600" /> },
-  { name: 'Jaya Grocer', icon: <UtensilsCrossed className="size-6 text-emerald-600" /> },
-  { name: 'Free Food Society', icon: <Heart className="size-6 text-emerald-600" /> },
-  { name: 'Kloth Cares / Kloth Circularity', icon: <CircleDollarSign className="size-6 text-emerald-600" /> },
-  { name: 'Lembaga Zakat Selangor', icon: <Banknote className="size-6 text-emerald-600" /> },
+  { name: 'S P Setia Foundation', icon: <Landmark className="size-6 text-purple-600" /> },
+  { name: 'Perumahan Kinrara Berhad', icon: <Building2 className="size-6 text-purple-600" /> },
+  { name: 'Jaya Grocer', icon: <UtensilsCrossed className="size-6 text-purple-600" /> },
+  { name: 'Free Food Society', icon: <Heart className="size-6 text-purple-600" /> },
+  { name: 'Kloth Cares / Kloth Circularity', icon: <CircleDollarSign className="size-6 text-purple-600" /> },
+  { name: 'Lembaga Zakat Selangor', icon: <Banknote className="size-6 text-purple-600" /> },
 ];
 
 interface ProgrammeStat {
@@ -125,8 +125,8 @@ export default function AdminTab() {
     <div className="space-y-8">
       {/* Page Title */}
       <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-100">
-          <Shield className="size-5 text-emerald-700" />
+        <div className="flex size-10 items-center justify-center rounded-lg bg-purple-100">
+          <Shield className="size-5 text-purple-700" />
         </div>
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
@@ -139,11 +139,11 @@ export default function AdminTab() {
       </div>
 
       {/* ── Section 1: Organization Info ───────────────────────────── */}
-      <Card className="border-emerald-200 bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-950 dark:to-emerald-950/20">
+      <Card className="border-purple-200 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-950 dark:to-purple-950/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-600 shadow-md">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-purple-600 shadow-md">
                 <Building2 className="size-6 text-white" />
               </div>
               <div>
@@ -151,7 +151,7 @@ export default function AdminTab() {
                 <CardDescription>{orgInfo.focus}</CardDescription>
               </div>
             </div>
-            <Badge className="bg-emerald-600 text-white hover:bg-emerald-700">
+            <Badge className="bg-purple-600 text-white hover:bg-purple-700">
               <Calendar className="mr-1 size-3" />
               {orgInfo.founded}
             </Badge>
@@ -159,24 +159,24 @@ export default function AdminTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-white p-3 dark:border-emerald-900 dark:bg-gray-900">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+            <div className="flex items-start gap-3 rounded-lg border border-purple-100 bg-white p-3 dark:border-purple-900 dark:bg-gray-900">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-purple-600" />
               <span className="text-sm text-gray-700 dark:text-gray-300">{orgInfo.address}</span>
             </div>
-            <div className="flex items-center gap-3 rounded-lg border border-emerald-100 bg-white p-3 dark:border-emerald-900 dark:bg-gray-900">
-              <Mail className="size-4 shrink-0 text-emerald-600" />
+            <div className="flex items-center gap-3 rounded-lg border border-purple-100 bg-white p-3 dark:border-purple-900 dark:bg-gray-900">
+              <Mail className="size-4 shrink-0 text-purple-600" />
               <span className="text-sm text-gray-700 dark:text-gray-300">{orgInfo.email}</span>
             </div>
-            <div className="flex items-center gap-3 rounded-lg border border-emerald-100 bg-white p-3 dark:border-emerald-900 dark:bg-gray-900">
-              <Phone className="size-4 shrink-0 text-emerald-600" />
+            <div className="flex items-center gap-3 rounded-lg border border-purple-100 bg-white p-3 dark:border-purple-900 dark:bg-gray-900">
+              <Phone className="size-4 shrink-0 text-purple-600" />
               <span className="text-sm text-gray-700 dark:text-gray-300">{orgInfo.phone}</span>
             </div>
-            <div className="flex items-center gap-3 rounded-lg border border-emerald-100 bg-white p-3 dark:border-emerald-900 dark:bg-gray-900">
-              <Globe className="size-4 shrink-0 text-emerald-600" />
+            <div className="flex items-center gap-3 rounded-lg border border-purple-100 bg-white p-3 dark:border-purple-900 dark:bg-gray-900">
+              <Globe className="size-4 shrink-0 text-purple-600" />
               <span className="text-sm text-gray-700 dark:text-gray-300">{orgInfo.website}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white">
+          <div className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white">
             <Star className="size-4" />
             <span className="text-sm font-medium">
               {orgInfo.yearsOfService} tahun berkhidmat untuk komuniti asnaf
@@ -188,7 +188,7 @@ export default function AdminTab() {
       {/* ── Section 2: Leadership / Board Members ─────────────────── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Users className="size-5 text-emerald-600" />
+          <Users className="size-5 text-purple-600" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
             Jawatankuasa & Kepimpinan
           </h3>
@@ -228,16 +228,16 @@ export default function AdminTab() {
           {boardMembers.slice(2).map((member) => (
             <Card
               key={member.role}
-              className="transition-all hover:border-emerald-300 hover:shadow-md dark:hover:border-emerald-700"
+              className="transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700"
             >
               <CardContent className="flex items-center gap-3 py-4">
-                <Avatar className="size-10 border border-emerald-200 bg-emerald-50">
-                  <AvatarFallback className="bg-emerald-50 text-lg">
+                <Avatar className="size-10 border border-purple-200 bg-purple-50">
+                  <AvatarFallback className="bg-purple-50 text-lg">
                     {member.icon}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-emerald-600">{member.role}</p>
+                  <p className="text-xs font-medium text-purple-600">{member.role}</p>
                   <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {member.name}
                   </p>
@@ -251,7 +251,7 @@ export default function AdminTab() {
       {/* ── Section 3: Programme Portfolio Summary ────────────────── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <BookOpen className="size-5 text-emerald-600" />
+          <BookOpen className="size-5 text-purple-600" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
             Portfolio Program
           </h3>
@@ -261,7 +261,7 @@ export default function AdminTab() {
           {programmeStats.map((program) => (
             <Card
               key={program.title}
-              className="group transition-all hover:border-emerald-300 hover:shadow-md dark:hover:border-emerald-700"
+              className="group transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700"
             >
               <CardContent className="space-y-3 py-5">
                 <div className="flex items-center gap-3">
@@ -278,7 +278,7 @@ export default function AdminTab() {
                       key={stat}
                       className="flex items-center gap-2 text-sm text-muted-foreground"
                     >
-                      <ArrowRight className="size-3 text-emerald-500" />
+                      <ArrowRight className="size-3 text-purple-500" />
                       <span>{stat}</span>
                     </div>
                   ))}
@@ -292,7 +292,7 @@ export default function AdminTab() {
       {/* ── Section 4: Key Partners ───────────────────────────────── */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <HandshakeIcon className="size-5 text-emerald-600" />
+          <HandshakeIcon className="size-5 text-purple-600" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
             Rakan Strategik
           </h3>
@@ -302,10 +302,10 @@ export default function AdminTab() {
           {partners.map((partner) => (
             <Card
               key={partner.name}
-              className="group transition-all hover:border-emerald-300 hover:shadow-md dark:hover:border-emerald-700"
+              className="group transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700"
             >
               <CardContent className="flex items-center gap-3 py-4">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/30">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30">
                   {partner.icon}
                 </div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -318,10 +318,10 @@ export default function AdminTab() {
       </div>
 
       {/* ── Section 5: Contact / Donation Info ────────────────────── */}
-      <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-gray-950">
+      <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-gray-950">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-600 shadow-md">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-purple-600 shadow-md">
               <Banknote className="size-5 text-white" />
             </div>
             <div>
@@ -333,7 +333,7 @@ export default function AdminTab() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-white p-4 dark:border-emerald-800 dark:bg-gray-900">
+          <div className="flex items-center justify-between rounded-lg border border-purple-200 bg-white p-4 dark:border-purple-800 dark:bg-gray-900">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
                 <Banknote className="size-5 text-amber-600" />
@@ -351,8 +351,8 @@ export default function AdminTab() {
             >
               {copied ? (
                 <>
-                  <Check className="size-3.5 text-emerald-500" />
-                  <span className="text-emerald-600">Disalin</span>
+                  <Check className="size-3.5 text-purple-500" />
+                  <span className="text-purple-600">Disalin</span>
                 </>
               ) : (
                 <>
@@ -362,8 +362,8 @@ export default function AdminTab() {
               )}
             </button>
           </div>
-          <div className="flex items-start gap-2 rounded-lg bg-emerald-600/10 p-3 dark:bg-emerald-600/20">
-            <Shield className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+          <div className="flex items-start gap-2 rounded-lg bg-purple-600/10 p-3 dark:bg-purple-600/20">
+            <Shield className="mt-0.5 size-4 shrink-0 text-purple-600" />
             <p className="text-sm text-gray-700 dark:text-gray-300">
               <span className="font-medium">Resit akan diberikan</span> kepada semua penderma
               sebagai rekod sumbangan anda. Terima kasih atas sokongan anda.

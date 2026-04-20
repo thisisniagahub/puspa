@@ -175,8 +175,8 @@ const CATEGORY_MAP: Record<string, { label: string; color: string; bg: string }>
 const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
   active: {
     label: 'Aktif',
-    color: 'text-emerald-700 dark:text-emerald-300',
-    bg: 'bg-emerald-100 dark:bg-emerald-900/40 border-emerald-200 dark:border-emerald-800',
+    color: 'text-purple-700 dark:text-purple-300',
+    bg: 'bg-purple-100 dark:bg-purple-900/40 border-purple-200 dark:border-purple-800',
   },
   completed: {
     label: 'Selesai',
@@ -321,7 +321,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <p className="text-muted-foreground text-sm mb-6 max-w-sm">
         Tiada program yang sepadan dengan carian atau penapis anda. Mulakan dengan menambah program baharu.
       </p>
-      <Button onClick={onAdd} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+      <Button onClick={onAdd} className="bg-purple-600 hover:bg-purple-700 text-white">
         <Plus className="size-4" />
         Tambah Program
       </Button>
@@ -817,7 +817,7 @@ function ProgrammeFormDialog({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-purple-600 hover:bg-purple-700 text-white"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -1322,7 +1322,7 @@ export default function ProgrammesTab() {
           </Badge>
           <Button
             onClick={handleAdd}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
           >
             <Plus className="size-4" />
             Tambah Program

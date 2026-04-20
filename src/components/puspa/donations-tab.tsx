@@ -132,7 +132,7 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
   confirmed: {
     label: 'Disahkan',
     className:
-      'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+      'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800',
   },
   pending: {
     label: 'Menunggu',
@@ -231,15 +231,15 @@ function SummaryCards({ summary }: { summary: DonationsSummary }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {/* Total Donations */}
-      <Card className="border-l-4 border-l-emerald-500">
+      <Card className="border-l-4 border-l-purple-500">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <DollarSign className="size-4 text-emerald-600" />
+            <DollarSign className="size-4 text-purple-600" />
             Jumlah Sumbangan
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+          <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">
             {formatCurrency(summary.totalDonations)}
           </p>
         </CardContent>
@@ -891,7 +891,7 @@ function ViewDonationDialog({
                     className={cn(
                       'text-sm font-medium',
                       item.highlight &&
-                        'text-lg font-bold text-emerald-700 dark:text-emerald-400'
+                        'text-lg font-bold text-purple-700 dark:text-purple-400'
                     )}
                   >
                     {item.value}
