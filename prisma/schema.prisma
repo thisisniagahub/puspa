@@ -1,3 +1,8 @@
+// ============================================================
+// PUSPA NGO Management System — Prisma Schema (SQLite)
+// Islamic Charity / Asnaf Case Management
+// ============================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,133 +12,294 @@ datasource db {
   url      = "file:../db/puspa.db"
 }
 
+// ============================================================
+// USER — System users with roles
+// ============================================================
 
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String
+  password  String
+  // role values: admin, ops, finance, volunteer
+  role      String    @default("volunteer")
+  avatar    String?
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-// PUSPA Models
-
-model Member {
-  id              String   @id @default(cuid())
-  name            String
-  icNumber        String   @unique
-  phone           String
-  email           String?
-  address         String?
-  category        String   @default("asnaf") // asnaf, volunteer, donor, staff
-  status          String   @default("active") // active, inactive, suspended
-  joinDate        DateTime @default(now())
-  familyMembers   Int      @default(1)
-  monthlyIncome   Float    @default(0)
-  notes           String?
-  avatar          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  donations            Donation[]
-  programmeMembers     ProgrammeMember[]
-  welfareAssessments   WelfareAssessment[]
-  communicationLogs    CommunicationLog[]
+  // Relations
+  auditLogs              AuditLog[]
+  assignedCases          Case[]         @relation("AssignedCases")
+  caseNotes              CaseNote[]
+  documents              CaseDocument[]
+  approvedDisbursements  Disbursement[] @relation("ApprovedDisbursements")
+  processedDisbursements Disbursement[] @relation("ProcessedDisbursements")
+  createdProgrammes      Programme[]    @relation("ProgrammeCreator")
+  verifiedCases          Case[]         @relation("VerifiedCases")
+  approvedCases          Case[]         @relation("ApprovedCases")
+  notifications          Notification[]
 }
 
-model WelfareAssessment {
-  id              String   @id @default(cuid())
-  memberId        String
-  foodSecurity    Int      @default(3)
-  education       Int      @default(3)
-  healthcare      Int      @default(3)
-  financial       Int      @default(3)
-  housing         Int      @default(3)
-  overallScore    Float    @default(3.0)
-  notes           String?
-  assessedBy      String?
-  assessedAt      DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-}
-
-model CommunicationLog {
-  id              String    @id @default(cuid())
-  memberId        String
-  type            String    @default("phone")
-  summary         String
-  followUpNeeded  Boolean   @default(false)
-  followUpDate    DateTime?
-  priority        String    @default("normal")
-  conductedBy     String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  member          Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-}
+// ============================================================
+// PROGRAMME — Charity programmes (improved)
+// ============================================================
 
 model Programme {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  category        String   @default("food-aid") // food-aid, education, skills, healthcare, financial, community
-  status          String   @default("active") // active, completed, upcoming, cancelled
-  startDate       DateTime?
-  endDate         DateTime?
-  location        String?
-  beneficiaryCount Int     @default(0)
-  volunteerCount  Int      @default(0)
-  budget          Float    @default(0)
-  actualCost      Float    @default(0)
-  partners        String?  // JSON array of partner names
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  code                String?   @unique // e.g. "PG-001"
+  name                String
+  description         String?
+  // category values: food_aid, education, skills_training, healthcare, financial_assistance, community, emergency_relief, dawah
+  category            String    @default("food_aid")
+  // status values: draft, active, paused, completed, cancelled
+  status              String    @default("active")
+  startDate           DateTime?
+  endDate             DateTime?
+  location            String?
+  targetBeneficiaries Int       @default(0)
+  actualBeneficiaries Int       @default(0)
+  totalBudget         Float     @default(0)
+  totalSpent          Float     @default(0)
+  totalDisbursed      Float     @default(0)
+  // JSON array of partner objects
+  partners            String?
+  notes               String?
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  donations      Donation[]
-  programmeMembers ProgrammeMember[]
-  activities      Activity[]
+  // Relations
+  cases         Case[]
+  donations     Donation[]
+  disbursements Disbursement[]
+  creator       User?          @relation("ProgrammeCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 }
+
+// ============================================================
+// CASE — Core asnaf case management entity
+// ============================================================
+
+model Case {
+  id          String  @id @default(cuid())
+  // e.g. "CS-2025-0001"
+  caseNumber  String  @unique
+  title       String
+  description String?
+  // status values: draft, submitted, verifying, verified, scoring, scored, approved, disbursing, disbursed, follow_up, closed, rejected
+  status      String  @default("draft")
+  // priority values: urgent, high, normal, low
+  priority    String  @default("normal")
+
+  // Applicant details
+  applicantName    String
+  applicantIc      String  @unique
+  applicantPhone   String?
+  applicantEmail   String?
+  applicantAddress String?
+
+  // Financial assessment
+  householdSize Int   @default(1)
+  monthlyIncome Float @default(0)
+
+  // Classification
+  // category values: zakat, sedekah, wakaf, infak, government_aid
+  category    String  @default("zakat")
+  subcategory String?
+
+  // Programme & user assignments
+  programmeId String?
+  assignedTo  String?
+  verifiedBy  String?
+  approvedBy  String?
+
+  // Verification & approval
+  verificationScore Float?
+  approvalNotes     String?
+  verifiedAt        DateTime?
+  approvedAt        DateTime?
+  closedAt          DateTime?
+  followUpDate      DateTime?
+  rejectionReason   String?
+
+  notes    String?
+  // JSON blob for flexible metadata
+  metadata String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  programme     Programme?     @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  assignee      User?          @relation("AssignedCases", fields: [assignedTo], references: [id], onDelete: SetNull)
+  verifier      User?          @relation("VerifiedCases", fields: [verifiedBy], references: [id], onDelete: SetNull)
+  approver      User?          @relation("ApprovedCases", fields: [approvedBy], references: [id], onDelete: SetNull)
+  caseNotes     CaseNote[]
+  disbursements Disbursement[]
+  documents     CaseDocument[]
+  donations     Donation[]
+}
+
+// ============================================================
+// CASE NOTE — Timeline notes on cases
+// ============================================================
+
+model CaseNote {
+  id        String   @id @default(cuid())
+  caseId    String
+  authorId  String
+  // type values: note, phone_call, visit, assessment, document, status_change, system
+  type      String   @default("note")
+  content   String
+  // JSON blob
+  metadata  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  case   Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// CASE DOCUMENT — Documents attached to cases
+// ============================================================
+
+model CaseDocument {
+  id          String   @id @default(cuid())
+  caseId      String
+  uploadedBy  String
+  fileName    String
+  filePath    String
+  fileType    String
+  fileSize    Int
+  // category values: ic_copy, income_proof, utility_bill, medical, photo, assessment, report, other
+  category    String   @default("other")
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  case     Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// DONATION — Incoming donations (improved)
+// ============================================================
 
 model Donation {
   id              String   @id @default(cuid())
   donorName       String
   donorEmail      String?
   donorPhone      String?
+  donorIc         String?
+  donorAddress    String?
   amount          Float
-  method          String   @default("bank-transfer") // bank-transfer, cash, online, cheque
-  status          String   @default("confirmed") // pending, confirmed, rejected
+  // method values: bank-transfer, cash, cheque, ewallet
+  method          String   @default("bank-transfer")
+  // status values: pending, confirmed, rejected, refunded
+  status          String   @default("pending")
   receiptNumber   String?
-  date            DateTime @default(now())
+  referenceNumber String?
   programmeId     String?
-  memberId        String?
+  caseId          String?
+  isAnonymous     Boolean  @default(false)
+  isTaxDeductible Boolean  @default(false)
+  // paymentChannel values: maybank2u, cimb_clicks, online_banking, cash, cheque, ewallet, other
+  paymentChannel  String?
   notes           String?
+  // JSON blob
+  metadata        String?
+  date            DateTime
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  programme       Programme?   @relation(fields: [programmeId], references: [id], onDelete: SetNull)
-  member          Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  // Relations
+  programme Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  case      Case?      @relation(fields: [caseId], references: [id], onDelete: SetNull)
 }
 
-model ProgrammeMember {
-  id              String   @id @default(cuid())
-  programmeId     String
-  memberId        String
-  role            String   @default("beneficiary") // beneficiary, volunteer, organizer
-  status          String   @default("active")
-  joinedAt        DateTime @default(now())
-  notes           String?
+// ============================================================
+// DISBURSEMENT — Track money given to asnaf
+// ============================================================
 
-  programme       Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-  member          Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+model Disbursement {
+  id                 String  @id @default(cuid())
+  // e.g. "DIS-2025-0001"
+  disbursementNumber String  @unique
+  caseId             String
+  programmeId        String?
+  approvedBy         String
+  processedBy        String?
+  amount             Float
+  // method values: bank_transfer, cash, cheque, ewallet
+  method             String  @default("bank_transfer")
+  // status values: pending, approved, processing, completed, failed, cancelled
+  status             String  @default("pending")
 
-  @@unique([programmeId, memberId])
+  bankName      String?
+  accountNumber String?
+  accountHolder String?
+
+  recipientName  String
+  recipientIc    String
+  recipientPhone String?
+
+  purpose       String
+  notes         String?
+  scheduledDate DateTime?
+  processedDate DateTime?
+  receiptFile   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  case      Case       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  programme Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  approver  User       @relation("ApprovedDisbursements", fields: [approvedBy], references: [id], onDelete: Cascade)
+  processor User?      @relation("ProcessedDisbursements", fields: [processedBy], references: [id], onDelete: SetNull)
 }
 
-model Activity {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  type            String   @default("general") // general, donation, programme, member, system
-  date            DateTime @default(now())
-  metadata        String?  // JSON
-  createdAt       DateTime @default(now())
+// ============================================================
+// AUDIT LOG — Track all system changes
+// ============================================================
 
-  programme       Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
-  programmeId     String?
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  // action values: create, update, delete, login, logout, status_change, export, import
+  action    String
+  // entity values: case, donation, disbursement, programme, user, document
+  entity    String
+  entityId  String
+  // JSON blob with change details
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// ============================================================
+// NOTIFICATION — User notifications
+// ============================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  // type values: info, success, warning, error, task_assigned, case_updated, donation_received
+  type      String   @default("info")
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  actionUrl String?
+  // JSON blob
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

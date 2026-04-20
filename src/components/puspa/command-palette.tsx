@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Users,
   CalendarDays,
@@ -92,7 +92,7 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export default function CommandPalette({
+export default function CommandPaletteInner({
   open,
   onOpenChange,
   onNavigate,
@@ -154,8 +154,6 @@ export default function CommandPalette({
     <CommandDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="PUSPA Command Palette"
-      description="Cari ahli, program, donasi, atau navigasi pantas"
     >
       <CommandInput
         placeholder="Cari ahli, program, donasi..."
@@ -331,5 +329,26 @@ export default function CommandPalette({
         )}
       </CommandList>
     </CommandDialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Standalone named export with self-managed state (for layout use)
+// ---------------------------------------------------------------------------
+export function CommandPalette() {
+  const [open, setOpen] = useState(false);
+  const handleNavigate = useCallback((_tab: string, _itemId?: string) => {
+    setOpen(false);
+  }, []);
+
+  const memoizedOnOpenChange = useMemo(() => setOpen, []);
+  const memoizedOnNavigate = useMemo(() => handleNavigate, [handleNavigate]);
+
+  return (
+    <CommandPaletteInner
+      open={open}
+      onOpenChange={memoizedOnOpenChange}
+      onNavigate={memoizedOnNavigate}
+    />
   );
 }
