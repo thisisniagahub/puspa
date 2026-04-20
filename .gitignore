@@ -58,4 +58,4 @@ db/*.db
 db/*.db-journal
 
 # Skills directory
-/skills/
+/skills/upload/
