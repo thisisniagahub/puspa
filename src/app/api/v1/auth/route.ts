@@ -6,6 +6,39 @@ import { createAuditLog, getClientIp } from "@/lib/audit";
 import { PERMISSIONS } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
+// Demo users for auto-seed on first deploy
+const DEMO_USERS = [
+  { email: "admin@puspa.org", name: "Pentadbir PUSPA", password: "admin123", role: "admin" },
+  { email: "ops@puspa.org", name: "Pegawai Operasi", password: "ops123", role: "ops" },
+  { email: "finance@puspa.org", name: "Pegawai Kewangan", password: "finance123", role: "finance" },
+  { email: "volunteer@puspa.org", name: "Sukarelawan Ahmad", password: "volunteer123", role: "volunteer" },
+];
+
+// Auto-seed demo users if database is empty (idempotent)
+async function ensureDemoUsersExist(): Promise<void> {
+  try {
+    const count = await db.user.count();
+    if (count > 0) return; // Already seeded
+
+    console.log("[AUTH] No users found. Auto-seeding demo accounts...");
+    const hashed = await Promise.all(DEMO_USERS.map((u) => hashPassword(u.password)));
+    await db.user.createMany({
+      data: DEMO_USERS.map((u, i) => ({
+        email: u.email,
+        name: u.name,
+        password: hashed[i],
+        role: u.role,
+        isActive: true,
+      })),
+      skipDuplicates: true,
+    });
+    console.log("[AUTH] Demo accounts seeded successfully");
+  } catch (error) {
+    console.error("[AUTH] Auto-seed failed:", error);
+    // Don't throw — let the login continue to fail naturally
+  }
+}
+
 // POST /api/v1/auth/login
 export async function POST(request: NextRequest) {
   try {
@@ -42,13 +75,25 @@ async function handleLogin(request: NextRequest, body: unknown) {
 
   const { email, password } = parsed.data;
 
-  const user = await db.user.findUnique({
+  let user = await db.user.findUnique({
     where: { email },
     select: { id: true, email: true, name: true, role: true, password: true, isActive: true },
   });
 
+  // Auto-seed: if no users exist in database, create demo accounts and retry
   if (!user) {
-    // Don't reveal that user doesn't exist
+    const totalUsers = await db.user.count();
+    if (totalUsers === 0) {
+      await ensureDemoUsersExist();
+      // Retry finding the user after seeding
+      user = await db.user.findUnique({
+        where: { email },
+        select: { id: true, email: true, name: true, role: true, password: true, isActive: true },
+      });
+    }
+  }
+
+  if (!user) {
     return apiError("Emel atau kata laluan tidak sah", 401);
   }
 
