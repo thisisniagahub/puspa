@@ -6,6 +6,68 @@ import { createAuditLog, getClientIp } from "@/lib/audit";
 import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
+async function syncCaseAfterDisbursementStatusChange(params: {
+  caseId: string;
+  caseNumber: string;
+  currentCaseStatus: string;
+  disbursementNumber: string;
+  fromStatus: string;
+  toStatus: string;
+  actor: { userId: string; name: string; role: string };
+}) {
+  const { caseId, caseNumber, currentCaseStatus, disbursementNumber, fromStatus, toStatus, actor } = params;
+
+  await db.caseNote.create({
+    data: {
+      caseId,
+      authorId: actor.userId,
+      type: "status_change",
+      content: `Status pengagihan ${disbursementNumber} berubah daripada ${fromStatus} kepada ${toStatus} oleh ${actor.name}.`,
+    },
+  });
+
+  if (toStatus !== "completed") {
+    return;
+  }
+
+  if (currentCaseStatus === "disbursed") {
+    return;
+  }
+
+  const updatedCase = await db.case.update({
+    where: { id: caseId },
+    data: { status: "disbursed" },
+    select: { id: true, caseNumber: true, applicantName: true },
+  });
+
+  await db.caseNote.create({
+    data: {
+      caseId,
+      authorId: actor.userId,
+      type: "status_change",
+      content: `Kes ${caseNumber} ditandakan sebagai selesai diagihkan selepas pengagihan ${disbursementNumber} disiapkan.`,
+    },
+  });
+
+  await sendOpenClawWebhook(buildOpenClawEvent({
+    source: "puspa",
+    eventType: "case_status_changed",
+    occurredAt: new Date().toISOString(),
+    entity: "case",
+    entityId: updatedCase.id,
+    actor,
+    data: {
+      caseNumber: updatedCase.caseNumber,
+      applicantName: updatedCase.applicantName,
+      fromStatus: currentCaseStatus,
+      toStatus: "disbursed",
+      verificationScore: null,
+      rejectionReason: null,
+      programmeName: null,
+    },
+  }));
+}
+
 // GET /api/v1/disbursements/[id]
 export async function GET(
   request: NextRequest,
@@ -45,7 +107,10 @@ export async function PATCH(
     requirePermission(session, "disbursements:update");
     const { id } = await params;
 
-    const existing = await db.disbursement.findUnique({ where: { id } });
+    const existing = await db.disbursement.findUnique({
+      where: { id },
+      include: { case: { select: { id: true, caseNumber: true, status: true } } },
+    });
     if (!existing) return apiNotFound("Pengagihan tidak dijumpai");
 
     const body = await request.json();
@@ -111,6 +176,18 @@ export async function PATCH(
     });
 
     if (parsed.data.status && parsed.data.status !== existing.status) {
+      if (updated.case) {
+        await syncCaseAfterDisbursementStatusChange({
+          caseId: updated.case.id,
+          caseNumber: updated.case.caseNumber,
+          currentCaseStatus: existing.case?.status ?? "approved",
+          disbursementNumber: updated.disbursementNumber,
+          fromStatus: existing.status,
+          toStatus: parsed.data.status,
+          actor: { userId: session.userId, name: session.name, role: session.role },
+        });
+      }
+
       await sendOpenClawWebhook(buildOpenClawEvent({
         source: "puspa",
         eventType: parsed.data.status === "completed" ? "disbursement_completed" : "disbursement_status_changed",

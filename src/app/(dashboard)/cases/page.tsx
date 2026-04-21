@@ -206,7 +206,6 @@ const STATUS_TRANSITIONS: Record<string, { to: string; label: string; icon?: typ
   ],
   disbursing: [
     { to: 'disbursed', label: 'Siap Agih', icon: CheckCircle2, variant: 'default' },
-    { to: 'failed', label: 'Gagal', icon: AlertTriangle, variant: 'destructive' },
   ],
   disbursed: [
     { to: 'follow_up', label: 'Susulan', icon: RotateCcw, variant: 'outline' },
@@ -219,9 +218,6 @@ const STATUS_TRANSITIONS: Record<string, { to: string; label: string; icon?: typ
   closed: [],
   rejected: [
     { to: 'draft', label: 'Buat Semula', icon: RotateCcw, variant: 'outline' },
-  ],
-  failed: [
-    { to: 'disbursing', label: 'Cuba Semula', icon: RotateCcw, variant: 'default' },
   ],
 };
 

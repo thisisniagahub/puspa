@@ -6,6 +6,47 @@ import { createAuditLog, getClientIp } from "@/lib/audit";
 import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
+async function syncCaseAfterDisbursementCreate(caseData: { id: string; status: string; caseNumber: string }, actor: { userId: string; name: string; role: string }) {
+  if (!["approved", "follow_up"].includes(caseData.status)) {
+    return null;
+  }
+
+  const updatedCase = await db.case.update({
+    where: { id: caseData.id },
+    data: { status: "disbursing" },
+    select: { id: true, caseNumber: true, applicantName: true, status: true },
+  });
+
+  await db.caseNote.create({
+    data: {
+      caseId: caseData.id,
+      authorId: actor.userId,
+      type: "status_change",
+      content: `Proses pengagihan dimulakan oleh ${actor.name} selepas rekod pengagihan diwujudkan.`,
+    },
+  });
+
+  await sendOpenClawWebhook(buildOpenClawEvent({
+    source: "puspa",
+    eventType: "case_status_changed",
+    occurredAt: new Date().toISOString(),
+    entity: "case",
+    entityId: updatedCase.id,
+    actor,
+    data: {
+      caseNumber: updatedCase.caseNumber,
+      applicantName: updatedCase.applicantName,
+      fromStatus: caseData.status,
+      toStatus: "disbursing",
+      verificationScore: null,
+      rejectionReason: null,
+      programmeName: null,
+    },
+  }));
+
+  return updatedCase;
+}
+
 // GET /api/v1/disbursements — List disbursements
 export async function GET(request: NextRequest) {
   try {
@@ -89,7 +130,7 @@ export async function POST(request: NextRequest) {
         disbursementNumber,
         caseId: data.caseId,
         programmeId: data.programmeId || caseData.programmeId,
-        approvedBy: data.approvedBy,
+        approvedBy: session.userId,
         amount: data.amount,
         method: data.method,
         status: "pending",
@@ -109,6 +150,17 @@ export async function POST(request: NextRequest) {
         approver: { select: { id: true, name: true } },
       },
     });
+
+    await db.caseNote.create({
+      data: {
+        caseId: caseData.id,
+        authorId: session.userId,
+        type: "system",
+        content: `Rekod pengagihan ${disbursement.disbursementNumber} diwujudkan sebanyak RM${data.amount.toFixed(2)} untuk ${data.recipientName}.`,
+      },
+    });
+
+    await syncCaseAfterDisbursementCreate(caseData, { userId: session.userId, name: session.name, role: session.role });
 
     await createAuditLog({
       userId: session.userId,
