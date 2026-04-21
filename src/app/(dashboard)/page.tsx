@@ -83,6 +83,7 @@ function StatCard({ title, value, icon: Icon, description, trend, color = "text-
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
+      <div className="pointer-events-none absolute inset-x-0 -top-10 h-48 bg-[radial-gradient(600px_circle_at_30%_20%,oklch(from_var(--primary)_l_c_h/0.25)_0%,transparent_60%)]" />
       <div>
         <Skeleton className="h-8 w-48 mb-2" />
         <Skeleton className="h-4 w-72" />
@@ -151,6 +152,11 @@ export default function DashboardPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Overview operasi PUSPA</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="glass-soft rounded-full px-3 py-1 text-xs text-muted-foreground">Ops-ready</span>
+          <span className="glass-soft rounded-full px-3 py-1 text-xs text-muted-foreground">Real-time signals</span>
+          <span className="glass-soft rounded-full px-3 py-1 text-xs text-muted-foreground">2026 glass UI</span>
+        </div>
       </motion.div>
 
       {/* Stats Grid */}

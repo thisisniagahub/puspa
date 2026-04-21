@@ -19,7 +19,7 @@ export function TopBar() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 px-4 glass-soft">
       {/* Sidebar Trigger */}
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />

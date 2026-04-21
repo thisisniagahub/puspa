@@ -104,6 +104,11 @@ export default function CapturesPage() {
         </div>
 
         <CreateMemoDialog onCreated={(c) => { setItems((p) => [c, ...p]); }} />
+        
+        {/* Mobile floating CTA */}
+        <div className="md:hidden fixed bottom-6 right-6 z-40">
+          <CreateMemoFab onCreated={(c) => { setItems((p) => [c, ...p]); }} />
+        </div>
       </div>
 
       {loading ? (
@@ -172,8 +177,38 @@ export default function CapturesPage() {
   );
 }
 
-function CreateMemoDialog({ onCreated }: { onCreated: (c: Capture) => void }) {
-  const [open, setOpen] = useState(false);
+function CreateMemoFab({ onCreated }: { onCreated: (c: Capture) => void }) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = setOpenProp ?? setOpenState;
+  return (
+    <>
+      <Button
+        size="icon"
+        className="glass-ring rounded-full h-14 w-14"
+        onClick={() => setOpen(true)}
+        aria-label="New memo"
+      >
+        <Plus className="w-5 h-5" />
+      </Button>
+      <CreateMemoDialog open={open} setOpen={setOpen} onCreated={onCreated} />
+    </>
+  );
+}
+
+function CreateMemoDialog({
+  onCreated,
+  open: openProp,
+  setOpen: setOpenProp,
+}: {
+  onCreated: (c: Capture) => void;
+  open?: boolean;
+  setOpen?: (v: boolean) => void;
+}) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = setOpenProp ?? setOpenState;
+
   const [tab, setTab] = useState<"text" | "link">("text");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
