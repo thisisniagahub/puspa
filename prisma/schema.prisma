@@ -40,6 +40,7 @@ model User {
   verifiedCases          Case[]         @relation("VerifiedCases")
   approvedCases          Case[]         @relation("ApprovedCases")
   notifications          Notification[]
+  captures               Capture[]
 }
 
 // ============================================================
@@ -187,6 +188,28 @@ model CaseDocument {
 // ============================================================
 // DONATION — Incoming donations (improved)
 // ============================================================
+
+model Capture {
+  id            String   @id @default(cuid())
+  type          String   @default("text") // text | voice | photo | link
+  title         String?
+  content       String?
+  linkUrl       String?
+  mediaUrl      String?
+  status        String   @default("raw") // raw | processed | converted | archived
+  extractedJson String?
+  convertedTo   String? // case | donation | disbursement | note
+  convertedId   String?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  creator User @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([createdBy])
+}
 
 model Donation {
   id              String   @id @default(cuid())

@@ -79,6 +79,8 @@ export async function PATCH(
 
     if (parsed.data.status && parsed.data.status !== existing.status) {
       await sendOpenClawWebhook(buildOpenClawEvent({
+        schemaVersion: "1",
+        correlationId: globalThis.crypto?.randomUUID?.() ?? undefined,
         source: "puspa",
         eventType: parsed.data.status === "confirmed" ? "donation_received" : "donation_status_changed",
         occurredAt: new Date().toISOString(),

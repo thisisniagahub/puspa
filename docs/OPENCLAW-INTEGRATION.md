@@ -23,6 +23,8 @@ PUSPA now supports optional outbound webhook delivery for these events:
 - `disbursement_created`
 - `disbursement_status_changed`
 - `disbursement_completed`
+- `capture_created` (Memos/Capture)
+- `capture_converted` (Memos/Capture)
 
 Environment variables:
 

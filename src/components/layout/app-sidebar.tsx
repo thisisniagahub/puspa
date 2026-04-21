@@ -15,6 +15,7 @@ import {
   Wrench,
   Settings,
   ChevronDown,
+  Inbox,
 } from "lucide-react";
 import {
   Sidebar,
@@ -78,6 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operasi",
     items: [
+      { title: "Memos", href: "/captures", icon: Inbox, badge: "New", badgeColor: "bg-purple-600" },
       { title: "Aktiviti", href: "/activities", icon: Calendar },
     ],
   },

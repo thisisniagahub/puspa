@@ -125,6 +125,8 @@ export async function POST(request: NextRequest) {
     });
 
     await sendOpenClawWebhook(buildOpenClawEvent({
+      schemaVersion: "1",
+      correlationId: globalThis.crypto?.randomUUID?.() ?? undefined,
       source: "puspa",
       eventType: donation.status === "confirmed" ? "donation_received" : "donation_recorded",
       occurredAt: new Date().toISOString(),
