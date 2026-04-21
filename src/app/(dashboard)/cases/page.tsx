@@ -140,6 +140,50 @@ interface CaseDetail extends CaseItem {
   caseNotes?: CaseNote[];
   disbursements?: unknown[];
   documents?: unknown[];
+  intelligence?: {
+    nextAction?: {
+      title: string;
+      description: string;
+      urgency: 'low' | 'medium' | 'high';
+    };
+    beneficiary360?: {
+      totalPastCases: number;
+      activeCasesForApplicant: number;
+      totalDisbursed: number;
+      totalDisbursementCount: number;
+      lastDisbursementAt: string | null;
+      totalNotes: number;
+      hasDocuments: boolean;
+      householdPressureScore: number;
+    };
+    riskFlags?: {
+      level: 'low' | 'medium' | 'high';
+      title: string;
+      description: string;
+    }[];
+    relatedCases?: {
+      id: string;
+      caseNumber: string;
+      status: string;
+      createdAt: string;
+      updatedAt: string;
+      applicantName: string;
+      priority: string;
+      matchReasons: string[];
+    }[];
+    recommendations?: {
+      id: string;
+      name: string;
+      code?: string | null;
+      reason: string;
+      remainingBudget: number;
+    }[];
+    quickSignals?: {
+      duplicatePhoneMatches: number;
+      duplicateAddressMatches: number;
+      recentRelatedCaseNumber: string | null;
+    };
+  };
 }
 
 interface CaseNote {
@@ -783,7 +827,7 @@ function CaseDetailSheet({
   useEffect(() => {
     if (open && caseId) {
       fetchCaseDetail();
-      setActiveTab('details');
+      setActiveTab('intel');
       setNewNoteContent('');
     } else {
       setCaseData(null);
@@ -1013,6 +1057,9 @@ function CaseDetailSheet({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="px-6 pt-3 shrink-0">
               <TabsList className="w-full">
+                <TabsTrigger value="intel" className="flex-1 gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Intel
+                </TabsTrigger>
                 <TabsTrigger value="details" className="flex-1 gap-1.5">
                   <FileText className="h-3.5 w-3.5" /> Butiran
                 </TabsTrigger>
@@ -1029,6 +1076,138 @@ function CaseDetailSheet({
             </div>
 
             <ScrollArea className="flex-1 min-h-0">
+              {/* ── Intelligence Tab ── */}
+              <TabsContent value="intel" className="m-0 p-6 space-y-4 mt-0">
+                {caseData.intelligence?.nextAction && (
+                  <div className={cn(
+                    'rounded-xl border p-4',
+                    caseData.intelligence.nextAction.urgency === 'high' && 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20',
+                    caseData.intelligence.nextAction.urgency === 'medium' && 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20',
+                    caseData.intelligence.nextAction.urgency === 'low' && 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20',
+                  )}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cadangan Tindakan Seterusnya</p>
+                        <h4 className="mt-1 text-base font-semibold">{caseData.intelligence.nextAction.title}</h4>
+                        <p className="mt-1 text-sm text-muted-foreground">{caseData.intelligence.nextAction.description}</p>
+                      </div>
+                      <Badge variant="outline" className="shrink-0">
+                        {caseData.intelligence.nextAction.urgency === 'high' ? 'Segera' : caseData.intelligence.nextAction.urgency === 'medium' ? 'Sederhana' : 'Rendah'}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
+                {caseData.intelligence?.beneficiary360 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Users className="h-4 w-4 text-purple-600" /> Beneficiary 360
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <DetailItem label="Kes Lepas" value={String(caseData.intelligence.beneficiary360.totalPastCases)} />
+                      <DetailItem label="Kes Aktif Lain" value={String(caseData.intelligence.beneficiary360.activeCasesForApplicant)} highlight={caseData.intelligence.beneficiary360.activeCasesForApplicant > 0} />
+                      <DetailItem label="Jumlah Pengagihan" value={formatCurrency(caseData.intelligence.beneficiary360.totalDisbursed)} highlight />
+                      <DetailItem label="Bil. Pengagihan" value={String(caseData.intelligence.beneficiary360.totalDisbursementCount)} />
+                      <DetailItem label="Dokumen" value={caseData.intelligence.beneficiary360.hasDocuments ? 'Ada' : 'Belum ada'} highlight={!caseData.intelligence.beneficiary360.hasDocuments} />
+                      <DetailItem label="Household Pressure" value={`${caseData.intelligence.beneficiary360.householdPressureScore}/100`} highlight />
+                      <DetailItem label="Nota Kes" value={String(caseData.intelligence.beneficiary360.totalNotes)} />
+                      <DetailItem label="Pengagihan Terkini" value={caseData.intelligence.beneficiary360.lastDisbursementAt ? formatDate(caseData.intelligence.beneficiary360.lastDisbursementAt) : '-'} />
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-purple-600" /> Risk Signals
+                  </h4>
+                  {caseData.intelligence?.riskFlags && caseData.intelligence.riskFlags.length > 0 ? (
+                    <div className="space-y-3">
+                      {caseData.intelligence.riskFlags.map((flag, idx) => (
+                        <div
+                          key={`${flag.title}-${idx}`}
+                          className={cn(
+                            'rounded-lg border p-3',
+                            flag.level === 'high' && 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20',
+                            flag.level === 'medium' && 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20',
+                            flag.level === 'low' && 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/20',
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-semibold">{flag.title}</p>
+                            <Badge variant="outline">{flag.level === 'high' ? 'Tinggi' : flag.level === 'medium' ? 'Sederhana' : 'Rendah'}</Badge>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">{flag.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20 p-3 text-sm text-emerald-700 dark:text-emerald-300">
+                      Tiada risk signal besar dikesan untuk kes ini setakat data semasa.
+                    </div>
+                  )}
+                </div>
+
+                {(caseData.intelligence?.relatedCases?.length ?? 0) > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                        <RotateCcw className="h-4 w-4 text-purple-600" /> Kes Berkait / Duplicate Watch
+                      </h4>
+                      <div className="space-y-3">
+                        {caseData.intelligence?.relatedCases?.map((related) => (
+                          <div key={related.id} className="rounded-lg border p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono text-xs text-muted-foreground">{related.caseNumber}</span>
+                                  <StatusBadge status={related.status} className="text-[10px] px-1.5 py-0" />
+                                  <PriorityBadge priority={related.priority} />
+                                </div>
+                                <p className="mt-1 text-sm font-medium">{related.applicantName}</p>
+                                <p className="text-xs text-muted-foreground mt-1">Dikemaskini {formatDateTime(related.updatedAt)}</p>
+                              </div>
+                              <div className="flex flex-wrap gap-1 justify-end">
+                                {related.matchReasons.map((reason) => (
+                                  <Badge key={reason} variant="secondary" className="text-[10px]">{reason}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {(caseData.intelligence?.recommendations?.length ?? 0) > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-purple-600" /> Cadangan Program
+                      </h4>
+                      <div className="space-y-3">
+                        {caseData.intelligence?.recommendations?.map((programme) => (
+                          <div key={programme.id} className="rounded-lg border p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold">{programme.name}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{programme.reason}</p>
+                              </div>
+                              {programme.code && <Badge variant="outline">{programme.code}</Badge>}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">Baki bajet anggaran: {formatCurrency(programme.remainingBudget)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+
               {/* ── Details Tab ── */}
               <TabsContent value="details" className="m-0 p-6 space-y-4 mt-0">
                 {/* Applicant Details */}

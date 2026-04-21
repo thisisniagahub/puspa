@@ -7,6 +7,102 @@ import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
+function safeLower(value?: string | null) {
+  return value?.trim().toLowerCase() || null;
+}
+
+function buildCaseNextAction(status: string, context: {
+  hasDocuments: boolean;
+  hasDisbursement: boolean;
+  hasCompletedDisbursement: boolean;
+  verificationScore?: number | null;
+}) {
+  switch (status) {
+    case "draft":
+      return {
+        title: "Lengkapkan intake dan hantar kes",
+        description: "Semak maklumat pemohon, pastikan saluran komunikasi wujud, kemudian hantar untuk verifikasi.",
+        urgency: "medium",
+      };
+    case "submitted":
+      return {
+        title: "Mulakan verifikasi",
+        description: context.hasDocuments
+          ? "Dokumen sudah ada. Ops boleh terus mula verifikasi dan sahkan butiran kes."
+          : "Minta atau muat naik dokumen sokongan sebelum verifikasi untuk kurangkan rework.",
+        urgency: "high",
+      };
+    case "verifying":
+      return {
+        title: "Tutup jurang verifikasi",
+        description: context.hasDocuments
+          ? "Lengkapkan semakan terakhir dan gerakkan kes ke status verified."
+          : "Dokumen masih kurang. Lengkapkan bukti sebelum sahkan kes.",
+        urgency: "high",
+      };
+    case "verified":
+      return {
+        title: "Teruskan ke penilaian",
+        description: "Kes sudah verified. Isi skor penilaian untuk bantu keputusan kelulusan lebih cepat.",
+        urgency: "medium",
+      };
+    case "scoring":
+      return {
+        title: "Masukkan skor penilaian",
+        description: "Penilaian sedang berjalan. Simpan skor 0-100 supaya kes boleh masuk ke approval lane.",
+        urgency: "medium",
+      };
+    case "scored":
+      return {
+        title: "Buat keputusan kelulusan",
+        description: context.verificationScore !== null && context.verificationScore !== undefined
+          ? `Kes ini sudah dinilai pada ${context.verificationScore}/100. Admin boleh luluskan atau tolak dengan sebab yang jelas.`
+          : "Skor belum jelas. Semak semula justifikasi sebelum membuat keputusan kelulusan.",
+        urgency: "high",
+      };
+    case "approved":
+      return {
+        title: "Cipta pengagihan",
+        description: context.hasDisbursement
+          ? "Pengagihan sudah wujud. Finance boleh terus gerakkan payout ke processing/completed."
+          : "Finance patut cipta pengagihan daripada kes ini untuk elakkan approval tergantung tanpa payout.",
+        urgency: "high",
+      };
+    case "disbursing":
+      return {
+        title: "Lengkapkan payout dan rekonsiliasi",
+        description: context.hasCompletedDisbursement
+          ? "Payout nampak sudah lengkap. Pastikan status kes ikut ditutup atau masuk susulan."
+          : "Pantau status pengagihan sampai completed dan simpan bukti transaksi bila ada.",
+        urgency: "high",
+      };
+    case "disbursed":
+      return {
+        title: "Tentukan susulan atau tutup",
+        description: "Kes sudah diagihkan. Tentukan sama ada perlu follow-up outcome atau boleh ditutup.",
+        urgency: "medium",
+      };
+    case "follow_up":
+      return {
+        title: "Jalankan follow-up outcome",
+        description: "Hubungi penerima, semak impak bantuan, dan tentukan sama ada kes patut ditutup atau perlu bantuan tambahan.",
+        urgency: "medium",
+      };
+    case "rejected":
+      return {
+        title: "Simpan justifikasi dengan kemas",
+        description: "Pastikan sebab penolakan cukup jelas untuk audit trail dan rujukan masa depan.",
+        urgency: "low",
+      };
+    default:
+      return {
+        title: "Semak status kes",
+        description: "Pastikan langkah seterusnya jelas untuk elakkan kes tergantung tanpa tindakan.",
+        urgency: "low",
+      };
+  }
+}
+
 // GET /api/v1/cases/[id]
 export async function GET(
   _request: NextRequest,
@@ -48,7 +144,180 @@ export async function GET(
       .filter(d => d.status === "completed")
       .reduce((sum, d) => sum + d.amount, 0);
 
-    return apiSuccess({ ...caseData, totalDisbursed });
+    const normalizedPhone = safeLower(caseData.applicantPhone);
+    const normalizedAddress = safeLower(caseData.applicantAddress);
+
+    const [sameIcCases, samePhoneCases, sameAddressCases, activeCasesForApplicant, relatedProgrammes] = await Promise.all([
+      db.case.findMany({
+        where: { id: { not: id }, applicantIc: caseData.applicantIc },
+        select: { id: true, caseNumber: true, status: true, createdAt: true, updatedAt: true, applicantName: true, priority: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      normalizedPhone
+        ? db.case.findMany({
+            where: {
+              id: { not: id },
+              applicantPhone: caseData.applicantPhone,
+            },
+            select: { id: true, caseNumber: true, status: true, createdAt: true, updatedAt: true, applicantName: true, priority: true },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+          })
+        : Promise.resolve([]),
+      normalizedAddress
+        ? db.case.findMany({
+            where: {
+              id: { not: id },
+              applicantAddress: caseData.applicantAddress,
+            },
+            select: { id: true, caseNumber: true, status: true, createdAt: true, updatedAt: true, applicantName: true, priority: true },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+          })
+        : Promise.resolve([]),
+      db.case.count({
+        where: {
+          id: { not: id },
+          applicantIc: caseData.applicantIc,
+          status: { in: ["draft", "submitted", "verifying", "verified", "scoring", "scored", "approved", "disbursing", "follow_up"] },
+        },
+      }),
+      db.programme.findMany({
+        where: {
+          status: "active",
+          OR: [
+            { category: caseData.category },
+            caseData.programmeId ? { id: caseData.programmeId } : undefined,
+          ].filter(Boolean) as { category?: string; id?: string }[],
+        },
+        select: { id: true, name: true, code: true, category: true, totalBudget: true, totalSpent: true },
+        orderBy: { updatedAt: "desc" },
+        take: 3,
+      }),
+    ]);
+
+    const relatedCasesMap = new Map<string, {
+      id: string;
+      caseNumber: string;
+      status: string;
+      createdAt: Date;
+      updatedAt: Date;
+      applicantName: string;
+      priority: string;
+      matchReasons: string[];
+    }>();
+
+    for (const item of sameIcCases) {
+      relatedCasesMap.set(item.id, { ...item, matchReasons: ["IC sama"] });
+    }
+    for (const item of samePhoneCases) {
+      const existingRelated = relatedCasesMap.get(item.id);
+      if (existingRelated) existingRelated.matchReasons.push("Telefon sama");
+      else relatedCasesMap.set(item.id, { ...item, matchReasons: ["Telefon sama"] });
+    }
+    for (const item of sameAddressCases) {
+      const existingRelated = relatedCasesMap.get(item.id);
+      if (existingRelated) existingRelated.matchReasons.push("Alamat sama");
+      else relatedCasesMap.set(item.id, { ...item, matchReasons: ["Alamat sama"] });
+    }
+
+    const relatedCases = Array.from(relatedCasesMap.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 6);
+
+    const hasDocuments = (caseData._count?.documents ?? 0) > 0;
+    const hasDisbursement = (caseData._count?.disbursements ?? 0) > 0;
+    const hasCompletedDisbursement = caseData.disbursements.some(d => d.status === "completed");
+    const totalPastCases = sameIcCases.length;
+    const recentRelatedCase = relatedCases[0];
+    const duplicateSignalCount = [samePhoneCases.length > 0, sameAddressCases.length > 0].filter(Boolean).length;
+
+    const riskFlags: { level: "low" | "medium" | "high"; title: string; description: string }[] = [];
+
+    if (!caseData.applicantPhone) {
+      riskFlags.push({
+        level: "medium",
+        title: "Saluran komunikasi tidak lengkap",
+        description: "Tiada nombor telefon pada kes ini. Follow-up akan jadi lebih lambat jika bantuan perlu disahkan semula.",
+      });
+    }
+    if (!hasDocuments && ["submitted", "verifying", "verified", "scoring", "scored", "approved"].includes(caseData.status)) {
+      riskFlags.push({
+        level: "high",
+        title: "Dokumen sokongan masih tiada",
+        description: "Kes sudah bergerak dalam pipeline tetapi belum ada dokumen direkodkan. Ini berisiko untuk audit dan rework.",
+      });
+    }
+    if (activeCasesForApplicant > 0) {
+      riskFlags.push({
+        level: "high",
+        title: "Pemohon ada kes aktif lain",
+        description: `Terdapat ${activeCasesForApplicant} kes aktif lain untuk IC yang sama. Ops perlu semak sama ada bantuan bertindih atau memang kes susulan yang sah.`,
+      });
+    }
+    if (duplicateSignalCount > 0) {
+      riskFlags.push({
+        level: duplicateSignalCount > 1 ? "high" : "medium",
+        title: "Signal pertindihan dikesan",
+        description: `Dijumpai padanan pada ${duplicateSignalCount > 1 ? "telefon dan alamat" : samePhoneCases.length > 0 ? "telefon" : "alamat"} dengan kes lain. Perlu semak hubungan isi rumah atau duplicate intake.`,
+      });
+    }
+    if ((caseData.monthlyIncome ?? 0) <= 1200 && (caseData.householdSize ?? 0) >= 5) {
+      riskFlags.push({
+        level: "medium",
+        title: "Tekanan kewangan isi rumah tinggi",
+        description: `Pendapatan ${caseData.monthlyIncome} dengan ${caseData.householdSize} isi rumah menunjukkan tekanan bantuan yang tinggi dan wajar diprioritikan.`,
+      });
+    }
+    if (caseData.verificationScore !== null && caseData.verificationScore !== undefined && caseData.verificationScore < 50 && ["scored", "approved", "disbursing"].includes(caseData.status)) {
+      riskFlags.push({
+        level: "medium",
+        title: "Skor penilaian rendah",
+        description: `Skor ${caseData.verificationScore}/100 rendah berbanding threshold biasa. Semak semula justifikasi jika kes ini diteruskan.`,
+      });
+    }
+
+    const householdPressureScore = Math.max(0, Math.min(100,
+      Math.round(((caseData.householdSize * 12) - Math.min(caseData.monthlyIncome / 60, 40)) + (caseData.priority === "urgent" ? 20 : caseData.priority === "high" ? 10 : 0))
+    ));
+
+    const intelligence = {
+      nextAction: buildCaseNextAction(caseData.status, {
+        hasDocuments,
+        hasDisbursement,
+        hasCompletedDisbursement,
+        verificationScore: caseData.verificationScore,
+      }),
+      beneficiary360: {
+        totalPastCases,
+        activeCasesForApplicant,
+        totalDisbursed,
+        totalDisbursementCount: caseData.disbursements.length,
+        lastDisbursementAt: caseData.disbursements[0]?.processedDate ?? caseData.disbursements[0]?.createdAt ?? null,
+        totalNotes: caseData._count?.caseNotes ?? 0,
+        hasDocuments,
+        householdPressureScore,
+      },
+      riskFlags,
+      relatedCases,
+      recommendations: relatedProgrammes.map(programme => ({
+        id: programme.id,
+        name: programme.name,
+        code: programme.code,
+        reason: programme.category === caseData.category
+          ? "Program aktif dalam kategori yang sama"
+          : "Program semasa yang sudah dikaitkan dengan kes ini",
+        remainingBudget: Math.max(0, (programme.totalBudget ?? 0) - (programme.totalSpent ?? 0)),
+      })),
+      quickSignals: {
+        duplicatePhoneMatches: samePhoneCases.length,
+        duplicateAddressMatches: sameAddressCases.length,
+        recentRelatedCaseNumber: recentRelatedCase?.caseNumber ?? null,
+      },
+    };
+
+    return apiSuccess({ ...caseData, totalDisbursed, intelligence });
   } catch (error) {
     if (error instanceof AuthError) return apiError(error.message, error.statusCode);
     console.error("[CASES] GET by ID error:", error);
