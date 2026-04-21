@@ -6,14 +6,21 @@ type OpenClawEventType =
   | "donation_status_changed"
   | "disbursement_created"
   | "disbursement_status_changed"
-  | "disbursement_completed";
+  | "disbursement_completed"
+  | "capture_created"
+  | "capture_converted";
 
 interface OpenClawEventEnvelope {
+  schemaVersion?: "1";
+  correlationId?: string;
   source: "puspa";
   eventType: OpenClawEventType;
   occurredAt: string;
   entity: string;
   entityId: string;
+  delivery?: {
+    attempt?: number;
+  };
   actor?: {
     userId: string;
     name?: string;
@@ -24,6 +31,29 @@ interface OpenClawEventEnvelope {
 
 function isWebhookEnabled() {
   return process.env.PUSPA_OPENCLAW_WEBHOOK_ENABLED === "true";
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(input: RequestInfo | URL, init: RequestInit, retries = 3) {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(input, init);
+      if (res.ok) return res;
+      lastError = new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      lastError = err;
+    }
+
+    if (attempt < retries) {
+      const backoff = 400 * Math.pow(2, attempt - 1);
+      await sleep(backoff);
+    }
+  }
+  throw lastError;
 }
 
 function getWebhookConfig() {
@@ -141,15 +171,16 @@ async function postToOpenClawWebhook(event: OpenClawEventEnvelope): Promise<void
   if (!isWebhookEnabled() || !url) return;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithRetry(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(secret ? { Authorization: `Bearer ${secret}` } : {}),
+        ...(secret ? { "x-openclaw-webhook-secret": secret } : {}),
       },
       body: JSON.stringify(event),
       signal: AbortSignal.timeout(5000),
-    });
+    }, 3);
 
     if (!response.ok) {
       const text = await response.text().catch(() => "");

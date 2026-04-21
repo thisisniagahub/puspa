@@ -54,6 +54,11 @@ export const PERMISSIONS = {
   "reports:read": [ROLES.ADMIN, ROLES.FINANCE, ROLES.OPS] as UserRole[],
   "reports:export": [ROLES.ADMIN, ROLES.FINANCE] as UserRole[],
 
+  // Captures (AnyGen-style Memos)
+  "captures:create": [ROLES.ADMIN, ROLES.OPS, ROLES.FINANCE, ROLES.VOLUNTEER] as UserRole[],
+  "captures:read": [ROLES.ADMIN, ROLES.OPS, ROLES.FINANCE, ROLES.VOLUNTEER] as UserRole[],
+  "captures:convert": [ROLES.ADMIN, ROLES.OPS, ROLES.FINANCE] as UserRole[],
+
   // Audit
   "audit:read": [ROLES.ADMIN] as UserRole[],
 } as const;

@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 
 type AuditAction = "create" | "update" | "delete" | "login" | "logout" | "status_change" | "export" | "import";
-type AuditEntity = "case" | "donation" | "disbursement" | "programme" | "user" | "document";
+type AuditEntity = "case" | "donation" | "disbursement" | "programme" | "user" | "document" | "capture";
 
 interface CreateAuditLogInput {
   userId?: string;

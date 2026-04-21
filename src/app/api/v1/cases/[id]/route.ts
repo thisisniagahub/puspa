@@ -462,6 +462,8 @@ export async function PATCH(
 
     if (data.status && data.status !== existing.status) {
       await sendOpenClawWebhook(buildOpenClawEvent({
+        schemaVersion: "1",
+        correlationId: globalThis.crypto?.randomUUID?.() ?? undefined,
         source: "puspa",
         eventType: "case_status_changed",
         occurredAt: new Date().toISOString(),
