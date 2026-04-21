@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
 
 // GET /api/stats - Dashboard statistics
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    requireAuth(request);
+
     // Run all queries in parallel for performance
     const [
       allMembers,

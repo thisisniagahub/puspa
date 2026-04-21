@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
+import { requireAuth } from "@/lib/session";
 
 const PUSPA_SYSTEM_PROMPT = `You are PUSPA Assistant — the official AI helper for **PUSPA (Pertubuhan Urus Peduli Asnaf)**, a Malaysian asnaf-focused charity organization serving communities in Kuala Lumpur & Selangor since 2018.
 
@@ -51,6 +52,8 @@ PUSPA is dedicated to uplifting asnaf and underprivileged communities through ho
 
 export async function POST(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const body = await request.json();
     const { message } = body;
 

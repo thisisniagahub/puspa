@@ -6,16 +6,13 @@
 import { db } from "@/lib/db";
 import { ROLES, type UserRole, hasPermission, type Permission } from "@/lib/auth";
 import { getServerEnv } from "@/lib/env";
+import { createHmac, timingSafeEqual } from "crypto";
 
 const TOKEN_SECRET = getServerEnv("TOKEN_SECRET", {
   defaultValue: "dev-only-token-secret-change-me-now",
   minLength: 24,
 });
 const TOKEN_EXPIRY_HOURS = 24;
-
-// In-memory token store
-// Note: Sessions reset on each serverless cold start (acceptable for demo)
-const activeSessions = new Map<string, SessionData>();
 
 interface SessionData {
   userId: string;
@@ -33,37 +30,43 @@ interface SessionPayload {
   role: UserRole;
 }
 
-// ============================================================
-// Simple hash for token generation (no crypto dependency needed)
-// ============================================================
-
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(36);
+function signTokenPayload(payloadBase64: string): string {
+  return createHmac("sha256", TOKEN_SECRET).update(payloadBase64).digest("base64url");
 }
 
 function generateToken(payload: SessionPayload): string {
-  const timestamp = Date.now();
-  const data = `${payload.userId}:${payload.email}:${timestamp}:${TOKEN_SECRET}`;
-  return `puspa_${Buffer.from(data).toString("base64url")}_${simpleHash(data)}`;
+  const sessionData: SessionData = {
+    userId: payload.userId,
+    email: payload.email,
+    name: payload.name,
+    role: payload.role,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000,
+  };
+
+  const encodedPayload = Buffer.from(JSON.stringify(sessionData)).toString("base64url");
+  const signature = signTokenPayload(encodedPayload);
+  return `puspa.${encodedPayload}.${signature}`;
 }
 
 function decodeToken(token: string): SessionData | null {
   try {
-    if (!token.startsWith("puspa_")) return null;
+    if (!token.startsWith("puspa.")) return null;
 
-    // Clean up expired sessions
-    const now = Date.now();
-    for (const [key, session] of activeSessions) {
-      if (session.expiresAt < now) activeSessions.delete(key);
+    const [, encodedPayload, signature] = token.split(".");
+    if (!encodedPayload || !signature) return null;
+
+    const expectedSignature = signTokenPayload(encodedPayload);
+    const provided = Buffer.from(signature);
+    const expected = Buffer.from(expectedSignature);
+    if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+      return null;
     }
 
-    return activeSessions.get(token) ?? null;
+    const parsed = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as SessionData;
+    if (!parsed?.userId || !parsed?.email || !parsed?.role || !parsed?.expiresAt) return null;
+    if (parsed.expiresAt < Date.now()) return null;
+    return parsed;
   } catch {
     return null;
   }
@@ -75,19 +78,14 @@ function decodeToken(token: string): SessionData | null {
 
 export async function createSession(user: { id: string; email: string; name: string; role: string }): Promise<{ token: string; expiresAt: number }> {
   const role = user.role as UserRole;
-  const expiresAt = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
-
-  const sessionData: SessionData = {
+  const token = generateToken({
     userId: user.id,
     email: user.email,
     name: user.name,
     role,
-    createdAt: Date.now(),
-    expiresAt,
-  };
-
-  const token = generateToken(sessionData);
-  activeSessions.set(token, sessionData);
+  });
+  const sessionData = decodeToken(token);
+  const expiresAt = sessionData?.expiresAt ?? Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
 
   return { token, expiresAt };
 }
@@ -97,7 +95,7 @@ export function getSession(token: string): SessionData | null {
 }
 
 export function destroySession(token: string): void {
-  activeSessions.delete(token);
+  void token;
 }
 
 // ============================================================

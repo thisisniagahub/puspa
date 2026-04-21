@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
 
 // GET /api/programmes - List programmes with search, filter, pagination
 export async function GET(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const { searchParams } = new URL(request.url);
 
     const search = searchParams.get('search') || '';
@@ -73,6 +76,8 @@ export async function GET(request: NextRequest) {
 // POST /api/programmes - Create a new programme
 export async function POST(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const body = await request.json();
 
     const {

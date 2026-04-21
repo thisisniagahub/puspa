@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
 // ---------------------------------------------------------------------------
 // Navigation items
@@ -97,6 +98,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -173,13 +175,13 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src="/puspa-logo-official.png" alt="Admin" />
-                    <AvatarFallback className="rounded-lg">A</AvatarFallback>
+                    <AvatarImage src={user?.avatar ?? "/puspa-logo-official.png"} alt={user?.name ?? "Pengguna"} />
+                    <AvatarFallback className="rounded-lg">{user?.name?.charAt(0) ?? "P"}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Admin</span>
+                    <span className="truncate font-semibold">{user?.name ?? "PUSPA User"}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      admin@puspa.org.my
+                      {user?.email ?? "Tiada emel"}
                     </span>
                   </div>
                   <ChevronDown className="ml-auto size-4" />
@@ -194,7 +196,7 @@ export function AppSidebar() {
                 <DropdownMenuItem>Profil</DropdownMenuItem>
                 <DropdownMenuItem>Tetapan</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 dark:text-red-400">
+                <DropdownMenuItem className="text-red-600 dark:text-red-400" onClick={logout}>
                   Log Keluar
                 </DropdownMenuItem>
               </DropdownMenuContent>

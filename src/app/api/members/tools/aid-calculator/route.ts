@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/session";
 
 // Malaysia Poverty Line 2024
 const POVERTY_LINE = 2960;
@@ -36,6 +37,8 @@ function getAidCategory(recommendedAid: number): {
 
 export async function POST(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const body: AidCalculatorRequest = await request.json();
     const { monthlyIncome, familySize, category, specialNeeds } = body;
 

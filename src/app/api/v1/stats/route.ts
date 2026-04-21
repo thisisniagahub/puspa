@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { requireAuth, AuthError } from "@/lib/session";
 
 // GET /api/v1/stats — Dashboard statistics (no auth required for public dashboard view)
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    requireAuth(request);
+
     const now = new Date();
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -115,6 +118,9 @@ export async function GET() {
       },
     });
   } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode });
+    }
     console.error("[Stats API Error]", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

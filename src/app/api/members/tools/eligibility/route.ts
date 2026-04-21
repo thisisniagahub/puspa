@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import { db } from "@/lib/db";
+import { requireAuth } from "@/lib/session";
 
 const ELIGIBILITY_SYSTEM_PROMPT = `Anda adalah penasihat kelayakan program untuk PUSPA (Pertubuhan Urus Peduli Asnaf KL & Selangor). Tugasan anda adalah menganalisis data ahli dan menentukan program-program yang sesuai untuk mereka.
 
@@ -37,6 +38,8 @@ Susun mengikut matchScore tertinggi.`;
 
 export async function POST(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const body = await request.json();
     const { memberId } = body;
 

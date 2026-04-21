@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
 
 // GET /api/programmes/[id] - Get a single programme by ID
 export async function GET(
@@ -7,6 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    requireAuth(request);
+
     const { id } = await params;
 
     const programme = await db.programme.findUnique({

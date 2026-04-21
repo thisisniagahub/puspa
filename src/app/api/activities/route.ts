@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
 
 // GET /api/activities - List activities (latest first) with filter and pagination
 export async function GET(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const { searchParams } = new URL(request.url);
 
     const search = searchParams.get('search') || '';

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAuth } from "@/lib/session";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ memberId: string }> }
 ) {
   try {
+    requireAuth(_request);
+
     const { memberId } = await params;
 
     if (!memberId) {
@@ -33,6 +36,8 @@ export async function GET(
 
 export async function POST(request: NextRequest) {
   try {
+    requireAuth(request);
+
     const body = await request.json();
     const {
       memberId,
