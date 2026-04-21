@@ -43,6 +43,10 @@ interface DisbursementItem {
   notes?: string | null;
   scheduledDate: string | null;
   processedDate: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
+  accountHolder?: string | null;
+  receiptFile?: string | null;
   recipientName: string;
   recipientIc: string;
   recipientPhone?: string | null;
@@ -351,6 +355,9 @@ export default function DisbursementsPage() {
   const totalAmount = visibleItems.reduce((sum, item) => sum + item.amount, 0);
   const pendingCount = items.filter((item) => ['pending', 'approved', 'processing'].includes(item.status)).length;
   const completedCount = items.filter((item) => item.status === 'completed').length;
+  const scheduleGapCount = items.filter((item) => ['pending', 'approved', 'processing'].includes(item.status) && !item.scheduledDate).length;
+  const bankInfoGapCount = items.filter((item) => item.method === 'bank_transfer' && (!item.bankName || !item.accountNumber)).length;
+  const contactGapCount = items.filter((item) => !item.recipientPhone).length;
 
   const createDisbursement = async (payload: {
     caseId: string;
@@ -451,7 +458,7 @@ export default function DisbursementsPage() {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total diagih</CardDescription>
@@ -488,6 +495,39 @@ export default function DisbursementsPage() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Jadual belum set</CardDescription>
+            <CardTitle className="text-2xl">{scheduleGapCount}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">
+              Queue yang belum ada tarikh proses
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Maklumat bank tak lengkap</CardDescription>
+            <CardTitle className="text-2xl">{bankInfoGapCount}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">
+              Untuk pindahan bank sahaja
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Contact gap</CardDescription>
+            <CardTitle className="text-2xl">{contactGapCount}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">
+              Penerima tiada nombor telefon
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
@@ -518,6 +558,12 @@ export default function DisbursementsPage() {
             </div>
           ) : visibleItems.map((item) => {
             const nextAction = getNextAction(item.status);
+            const issues = [
+              !item.scheduledDate && ['pending', 'approved', 'processing'].includes(item.status) ? 'Belum ada jadual proses' : null,
+              item.method === 'bank_transfer' && (!item.bankName || !item.accountNumber) ? 'Maklumat bank tak lengkap' : null,
+              !item.recipientPhone ? 'Tiada nombor telefon penerima' : null,
+              item.status === 'completed' && !item.processedDate ? 'Selesai tanpa tarikh proses' : null,
+            ].filter(Boolean) as string[];
             return (
               <div key={item.id} className="rounded-xl border p-4 transition-colors hover:bg-muted/30">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -537,6 +583,18 @@ export default function DisbursementsPage() {
                     </div>
                     {item.notes && (
                       <p className="rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">{item.notes}</p>
+                    )}
+                    {issues.length > 0 && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20 p-3">
+                        <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">Ops / Reconciliation flags</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {issues.map((issue) => (
+                            <Badge key={issue} variant="outline" className="border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300">
+                              {issue}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                   <div className="flex flex-col items-start gap-2 lg:items-end">
