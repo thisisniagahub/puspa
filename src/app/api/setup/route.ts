@@ -12,10 +12,12 @@ import { hashPassword } from "@/lib/session";
 import { apiSuccess, apiError } from "@/lib/api-response";
 import { getServerEnv, isDemoModeEnabled, isSetupRouteEnabled } from "@/lib/env";
 
-const SETUP_SECRET = getServerEnv("SETUP_SECRET", {
-  defaultValue: "dev-only-setup-secret-change-me-now",
-  minLength: 24,
-});
+function getSetupSecret() {
+  return getServerEnv("SETUP_SECRET", {
+    defaultValue: "dev-only-setup-secret-change-me-now",
+    minLength: 24,
+  });
+}
 
 // Demo users to seed on first run
 const DEMO_USERS = [
@@ -54,10 +56,12 @@ export async function POST(request: NextRequest) {
     return apiError("Demo seeding disabled", 403);
   }
 
+  const setupSecret = getSetupSecret();
+
   // ── 1. Validate secret ─────────────────────────────────────────
   const body = await request.json().catch(() => ({}));
   const secret = typeof body?.secret === "string" ? body.secret : request.headers.get("x-setup-secret");
-  if (secret !== SETUP_SECRET) {
+  if (secret !== setupSecret) {
     return apiError("Invalid setup secret", 403);
   }
 
