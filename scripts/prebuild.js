@@ -50,10 +50,21 @@ function main() {
     console.log('[prebuild] Skipping .env.production load. Expecting env vars from deployment secret manager.');
   }
 
+  const shouldPushSchema = process.env.PUSPA_ENABLE_SCHEMA_PUSH === 'true';
+  const isVercel = process.env.VERCEL === '1';
+
+  if (!shouldPushSchema) {
+    console.log('[prebuild] Schema push disabled. Set PUSPA_ENABLE_SCHEMA_PUSH=true only for environments that can reach the database safely.');
+    if (isVercel) {
+      console.log('[prebuild] Vercel build detected, skipping prisma db push by default.');
+    }
+    process.exit(0);
+  }
+
   // Verify DATABASE_URL is available
   if (!process.env.DATABASE_URL) {
     console.log('[prebuild] WARNING: No DATABASE_URL found. Skipping schema push.');
-    console.log('[prebuild] Tables must be created manually or via Vercel env vars.');
+    console.log('[prebuild] Tables must be created manually or via deployment env vars.');
     process.exit(0);
   }
 
@@ -71,25 +82,17 @@ function main() {
     process.exit(0);
   }
 
-  console.log(`[prebuild] PostgreSQL detected. Pushing schema to database...`);
+  console.log('[prebuild] PostgreSQL detected. Pushing schema to database...');
 
-  // Mask password in log output
   const safeUrl = dbUrl.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
   console.log(`[prebuild] Connecting to: ${safeUrl}`);
 
-  try {
-    execSync('npx prisma db push --skip-generate --accept-data-loss', {
-      stdio: 'inherit',
-      env: { ...process.env },
-      timeout: 60000,
-    });
-    console.log('[prebuild] Schema pushed successfully!');
-  } catch (e) {
-    console.log('[prebuild] Schema push failed (tables may already exist):');
-    console.log(`[prebuild] Error: ${e.message?.substring(0, 200)}`);
-    console.log('[prebuild] Continuing with build...');
-    // Don't exit - let the build continue
-  }
+  execSync('npx prisma db push --skip-generate --accept-data-loss', {
+    stdio: 'inherit',
+    env: { ...process.env },
+    timeout: 60000,
+  });
+  console.log('[prebuild] Schema pushed successfully!');
 }
 
 main();

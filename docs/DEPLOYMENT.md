@@ -16,7 +16,7 @@
 | Environment | URL | Database | Status |
 |---|---|---|---|
 | **Local Development** | `http://localhost:3000` | env-dependent | ✅ Active |
-| **Production (Vercel)** | `https://puspa-chi.vercel.app` | env-dependent | ✅ Existing target |
+| **Production (Vercel)** | `https://puspa.gangniaga.my` | env-dependent | ✅ Active |
 | **Preview / Manual** | contoh `http://<server>:3000` | env-dependent | ✅ digunakan untuk semakan cepat |
 
 ---
@@ -43,21 +43,20 @@ git clone https://github.com/thisisniagahub/puspa.git
 cd puspa
 
 # 2. Install dependencies
-bun install
+npm install
 
 # 3. Setup environment
 cp .env.example .env
 # Edit .env with your values
 
-# 4. Setup database (SQLite - local)
-mkdir -p db
-bun run db:push
+# 4. Setup database
+npm run db:push
 
 # 5. Seed database (optional)
-bun run db:seed
+npm run db:seed
 
 # 6. Start development server
-bun run dev
+npm run dev
 ```
 
 ### 2.3 Environment Variables (Local)
@@ -70,13 +69,13 @@ DATABASE_URL="file:../db/puspa.db"
 ### 2.4 Development Commands
 
 ```bash
-bun run dev          # Start dev server (port 3000)
-bun run lint         # ESLint check
-bun run db:push      # Push Prisma schema to DB
-bun run db:generate  # Generate Prisma client
-bun run db:migrate   # Run Prisma migrations
-bun run db:seed      # Seed sample data
-bun run db:reset     # Reset database (destructive)
+npm run dev          # Start dev server (port 3000)
+npm run lint         # ESLint check
+npm run db:push      # Push Prisma schema to DB
+npm run db:generate  # Generate Prisma client
+npm run db:migrate   # Run Prisma migrations
+npm run db:seed      # Seed sample data
+npm run db:reset     # Reset database (destructive)
 ```
 
 ---
@@ -109,11 +108,16 @@ DATABASE_URL="postgresql://postgres.fahywepalxxyhnyetptq:[SECRET]@aws-0-ap-south
 
 # 3. Build settings (auto-detected):
 #    Framework Preset: Next.js
-#    Build Command: bun run build (or prisma generate && next build)
+#    Build Command: npm run build
 #    Output Directory: .next
-#    Install Command: bun install
+#    Install Command: npm install
 
-# 4. Deploy
+# 4. Important env toggle
+PUSPA_ENABLE_SCHEMA_PUSH=false
+# Leave schema push OFF on Vercel builds unless the build environment can safely reach your DB.
+# Run schema push separately from a trusted environment when needed.
+
+# 5. Deploy
 #    Vercel auto-deploys on push to main branch
 ```
 
@@ -121,7 +125,7 @@ DATABASE_URL="postgresql://postgres.fahywepalxxyhnyetptq:[SECRET]@aws-0-ap-south
 
 ```bash
 # Push schema to Supabase (run locally with production DATABASE_URL)
-DATABASE_URL="postgresql://..." bun run db:push
+DATABASE_URL="postgresql://..." npm run db:push
 
 # Or use Supabase SQL Editor to run migrations manually
 ```
@@ -130,7 +134,7 @@ DATABASE_URL="postgresql://..." bun run db:push
 
 ```bash
 # Send POST request to /api/seed on production
-curl -X POST https://puspa-chi.vercel.app/api/seed
+curl -X POST https://puspa.gangniaga.my/api/seed
 ```
 
 ---
