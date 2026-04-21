@@ -22,7 +22,7 @@ Work Log:
   - Stats: dashboard statistics
   - Seed: database seeding with hashed passwords
 - Created Case Management Service layer with workflow automation, notifications, and auto-logging
-- Built full login page with demo account quick-login buttons
+- Built and later upgraded the login page into a premium motion-led auth experience while keeping the auth flow intact
 - Built auth context provider with session persistence
 - Built auth guard component for protected routes
 - Updated dashboard layout with auth protection
@@ -51,7 +51,7 @@ Work Log:
 - Updated build script: `prisma db push --skip-generate --accept-data-loss` runs during Vercel build to auto-create tables
 - Rewrote /api/setup/route.ts to use Prisma (not REST API) for idempotent demo user seeding
 - Deleted old /api/seed/route.ts (referenced non-existent schema models: member, activity, programmeMember)
-- Added auto-seed in /api/v1/auth/route.ts: on first login, if DB has zero users, creates 4 demo accounts automatically
+- Earlier auto-seed logic on auth was part of a historical pass; current auth route is stricter and expects real users to exist in the database
 - Updated prisma/seed.ts to match new schema (User, Programme, Case, CaseNote, Donation, Disbursement, Notification)
 - Verified Supabase REST API works (service_role key valid, project exists, no tables yet)
 - Port 5432 blocked in sandbox — cannot run `prisma db push` locally, but Vercel build servers CAN reach Supabase
@@ -62,7 +62,7 @@ Work Log:
 Stage Summary:
 - PUSPA code is ready for Supabase PostgreSQL on Vercel
 - Vercel build auto-creates all tables via `prisma db push`
-- Auth endpoint auto-seeds 4 demo users on first login (no manual setup needed)
+- Current auth direction: login validates against existing users and no longer assumes demo auto-seeding on first login
 - User MUST set `DATABASE_URL` env var on Vercel dashboard for deployment to work
 - Connection string: `postgresql://postgres.syegoelayhwxnttahuls:Megat2026%23%23@db.syegoelayhwxnttahuls.supabase.co:5432/postgres?sslmode=require`
 - Old API routes (/api/members, /api/activities, etc.) still reference old schema — will need refactoring

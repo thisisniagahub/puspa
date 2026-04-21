@@ -1,9 +1,13 @@
 # DEPLOYMENT — Panduan Deployment
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA Deployment Guide
 
-> **Versi**: 1.0.0
-> **Tarikh**: Julai 2025
+> **Versi**: 1.1.0
+>
+> **Current reality**:
+> - aplikasi utama ialah PUSPA web app
+> - OpenClaw deployment/configuration didokumenkan berasingan di `docs/OPENCLAW-INTEGRATION.md`
+> - preview local semasa biasanya dijalankan melalui `npm run dev`
 
 ---
 
@@ -11,9 +15,9 @@
 
 | Environment | URL | Database | Status |
 |---|---|---|---|
-| **Local Development** | `http://localhost:3000` | SQLite | ✅ Active |
-| **Production (Vercel)** | `https://puspa-chi.vercel.app` | Supabase PostgreSQL | ✅ Active |
-| **Staging** | TBD | Supabase PostgreSQL | 🔲 Roadmap |
+| **Local Development** | `http://localhost:3000` | env-dependent | ✅ Active |
+| **Production (Vercel)** | `https://puspa-chi.vercel.app` | env-dependent | ✅ Existing target |
+| **Preview / Manual** | contoh `http://<server>:3000` | env-dependent | ✅ digunakan untuk semakan cepat |
 
 ---
 

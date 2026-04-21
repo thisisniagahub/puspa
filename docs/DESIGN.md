@@ -1,11 +1,14 @@
 # DESIGN — Design System & UI/UX Guidelines
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA Design System & UI/UX Guidelines
 
-> **Versi**: 1.0.0
-> **Tarikh**: Julai 2025
+> **Versi**: 1.1.0
 > **Status**: Active
-> **Dokumen**: Dikemaskini terakhir — Julai 2025
+>
+> **Current emphasis**:
+> - skrin login perlu terasa premium dan meyakinkan
+> - UI operator perlu mengutamakan tindakan seterusnya, signal risiko, dan readiness state
+> - OpenClaw accent kekal sekunder, bukan tema dominan produk
 
 ---
 

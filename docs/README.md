@@ -1,63 +1,60 @@
 # PUSPA - Pertubuhan Urus Peduli Asnaf
 
-> Sistem Pengurusan NGO Kebajikan Islam dengan Integrasi OpenClaw AI Agent Platform
+> Sistem pengurusan NGO kebajikan Islam dengan case workflow, intelligence panel, payout ops, dan integrasi OpenClaw sebagai automation layer.
 
 <p align="center">
   <img src="/puspa-logo-official.png" alt="PUSPA Logo" width="120" height="120" />
   <br />
   <strong>Pertubuhan Urus Peduli Asnaf</strong>
   <br />
-  <em>Platform Pengurusan Komprehensif untuk NGO Kebajikan Islam</em>
+  <em>Platform operasi NGO untuk kes, bantuan, sumbangan, dan tindakan operator</em>
 </p>
 
 ---
 
 ## 📖 Deskripsi
 
-**PUSPA** (Pertubuhan Urus Peduli Asnaf) ialah sistem pengurusan NGO komprehensif yang dibina untuk memperkemas operasi pertubuhan kebajikan Islam. Platform ini menggabungkan pengurusan ahli, program, sumbangan, aktiviti, dan alat AI dalam satu antarama yang mesra pengguna.
+**PUSPA** ialah aplikasi operasi NGO yang memusatkan pengurusan kes bantuan, disbursement, sumbangan, ahli, program, dan tugasan operator dalam satu antaramuka yang lebih moden.
 
-Platform ini juga mengintegrasikan **OpenClaw** — sebuah AI Agent Platform yang menyediakan keupayaan MCP Servers, Plugin marketplace, Integrations, Terminal, Multi-Agent orchestration, Model management, dan Automation.
+Arah produk semasa:
+- **PUSPA** kekal sebagai aplikasi teras untuk rekod, workflow, dan skrin operasi harian
+- **OpenClaw** digunakan sebagai lapisan automation, webhook orchestration, dan channel messaging
+- integrasi Telegram berjalan melalui route webhook PUSPA dan lane bot khas seperti `PuspaCareBot`
 
-> Integration note: untuk production direction yang lebih kemas, rujuk `docs/OPENCLAW-INTEGRATION.md`. Recommended path ialah jadikan PUSPA sebagai core NGO app, dan OpenClaw sebagai automation + messaging layer melalui webhook bridge.
+> Untuk arah integrasi yang terkini, rujuk `docs/OPENCLAW-INTEGRATION.md`.
 
-## ✨ Ciri-ciri Utama
+## ✨ Status Produk Semasa
 
-### 📊 Dashboard PUSPA (Modul Asas)
+### Shipped sekarang
 
-| Modul | Penerangan |
+| Area | Status |
 |---|---|
-| **Dashboard** | Paparan overview organisasi dengan statistik masa nyata, carta sumbangan bulanan, pecahan ahli, dan aktiviti terkini |
-| **Ahli** | Pengurusan ahli CRUD sepenuhnya — search, filter, pagination, profil terperinci, kategori (asnaf/sukarelawan/penderma/staf) |
-| **Program** | Pengurusan program kebajikan — kad grid layout, bajet tracking, senarai ahli program, kemajuan bajet |
-| **Donasi** | Pengurusan rekod sumbangan — ringkasan kewangan, filter status/kaedah, pagination, receipt tracking |
-| **Aktiviti** | Papan Kanban drag-and-drop dengan 4 lajur status (Dirancang / Dalam Proses / Selesai / Dibatalkan) |
-| **Alat AI** | Penjanaan laporan AI dengan 4 jenis (Ringkasan, Kewangan, Program, Ahli), prompt custom, dan eksport |
-| **Chat AI** | Chatbot AI bercakap Bahasa Melayu dengan sokongan suara (Speech-to-Text & Text-to-Speech) |
-| **Alat Ahli** | 4 alat analitik — Eligibiliti Program AI, Kalkulator Bantuan Kewangan, Penilaian Kebajikan, Log Komunikasi |
-| **Admin** | Maklumat organisasi, ahli lembaga, portfolio program, rakan strategik, maklumat bank sumbangan |
+| **Login experience** | UI log masuk premium dengan transition yang lebih advanced, visual trust panel, dan auth flow sedia ada dikekalkan |
+| **Dashboard** | Paparan overview operasi selepas login dengan statistik, kes terkini, dan sumbangan terkini |
+| **Case Operations** | CRUD kes, notes timeline, status workflow, dan panel intelligence operator |
+| **Case Intelligence** | `nextAction`, `beneficiary360`, `riskFlags`, `relatedCases`, `recommendations`, `quickSignals` pada detail kes |
+| **Disbursement Ops** | Cipta disbursement dari kes layak, readiness/reconciliation flags, dan progression status payout |
+| **Donations / Members / Programmes / Activities** | Modul pengurusan operasi utama sudah tersedia |
+| **AI Tools** | Laporan AI, chat AI, dan member tools masih tersedia sebagai lapisan bantuan operasi |
+| **OpenClaw Bridge** | Outbound webhook bridge + optional Telegram notification lane untuk event ops PUSPA |
 
-### 🦞 Integrasi OpenClaw (Modul AI)
+### OpenClaw integration reality
 
-| Modul | Penerangan |
-|---|---|
-| **MCP Servers** | Pengurusan server Model Context Protocol — STDIO, SSE, Streamable HTTP, CRUD, test connection |
-| **Plugins** | Marketplace plugin dari pelbagai sumber (OpenClaw, Codex, Claude, Cursor) dengan konfigurasi dan toggle |
-| **Integrations** | 17+ integrasi template — Chat Channels, Model Providers, Webhooks, Storage |
-| **Terminal** | Emulator terminal interaktif dengan 9 arahan, navigasi sejarah, dan paparan status masa nyata |
-| **Agents** | Pengurusan AI agent instances — konfigurasi model, personality, skill allowlist, channel bindings, routing |
-| **Models** | Konfigurasi model provider — primary/failover chain, specialized model routing, 24-provider directory |
-| **Automation** | Penjadualan tugasan, monitoring tugasan latar belakang, standing orders, webhook management |
+OpenClaw **bukan** UI utama PUSPA. Ia kini diposisikan sebagai:
+- webhook/event receiver
+- automations dan summaries
+- operator alert delivery ke Telegram / channel lain
+- agent task orchestration bila diperlukan
 
-### 🔧 Ciri-ciri Teknikal
+## 🔧 Ciri-ciri Teknikal Semasa
 
 - **Hydration-safe rendering** dengan `useSyncExternalStore`
-- **Command Palette** (Ctrl+K / Cmd+K) untuk navigasi pantas
-- **Dark/Light Mode** dengan tema ungu PUSPA
-- **Responsive Design** — mobile-first dengan dual layout (table vs card)
-- **Real-time notifications** bell dengan status gateway
-- **Zustand state management** untuk OpenClaw store
-- **Web Speech API** untuk input/output suara Bahasa Melayu
-- **Drag-and-Drop** Kanban board via @dnd-kit
+- **Role-based auth + session token** untuk skrin dalaman
+- **Advanced motion login UI** dengan `framer-motion`
+- **Case workflow + case notes** pada API `v1`
+- **Disbursement workflow sync** dengan status kes
+- **Responsive dashboard routes** untuk setiap modul utama
+- **Optional outbound webhook + direct Telegram alert lane** dari PUSPA
 
 ## 🛠️ Teknologi
 
@@ -107,7 +104,7 @@ puspa/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx          # Root layout (fonts, theme, metadata)
-│   │   ├── page.tsx            # Single-page app (all tabs)
+│   │   ├── page.tsx            # Login gate + authenticated dashboard entry
 │   │   ├── globals.css         # Tailwind + theme variables (purple)
 │   │   └── api/
 │   │       ├── stats/route.ts
@@ -170,41 +167,51 @@ git clone https://github.com/thisisniagahub/puspa.git
 cd puspa
 
 # Install dependencies
-bun install
+npm install
 
 # Setup database
-bun run db:push
+npm run db:push
 
-# Seed database (optional - untuk sample data)
-bun run db:seed
+# Seed database (optional)
+npm run db:seed
 
 # Start development server
-bun run dev
+npm run dev
 ```
 
 ### Environment Variables
 
 ```env
-# SQLite Database (local development)
-DATABASE_URL="file:../db/puspa.db"
+# Database
+DATABASE_URL="postgresql://..." 
+TOKEN_SECRET="replace-with-long-random-secret"
+SETUP_SECRET="replace-with-long-random-setup-secret"
+
+# Optional OpenClaw / Telegram bridge
+PUSPA_OPENCLAW_WEBHOOK_ENABLED=false
+PUSPA_OPENCLAW_WEBHOOK_URL=
+PUSPA_OPENCLAW_WEBHOOK_SECRET=
+PUSPA_TELEGRAM_ENABLED=false
+PUSPA_TELEGRAM_BOT_TOKEN=
+PUSPA_TELEGRAM_CHAT_ID=
 ```
 
-> Untuk production dengan Supabase PostgreSQL, tukar ke connection string Supabase.
+> Lihat `.env.example` dan `docs/OPENCLAW-INTEGRATION.md` untuk env contract semasa.
 
 ### Development
 
 ```bash
 # Run linting
-bun run lint
+npm run lint
 
 # Generate Prisma client
-bun run db:generate
+npm run db:generate
 
 # Push schema changes
-bun run db:push
+npm run db:push
 
 # Reset database (destructive)
-bun run db:reset
+npm run db:reset
 ```
 
 ## 🗄️ Database Schema

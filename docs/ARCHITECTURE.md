@@ -1,11 +1,16 @@
 # ARCHITECTURE — Senibina Sistem
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA Operations App + OpenClaw Automation Layer
 
-> **Versi**: 1.0.0
-> **Tarikh**: Julai 2025
+> **Versi**: 1.1.0
 > **Status**: Active
-> **Dokumen**: Dikemaskini terakhir — Julai 2025
+> **Dokumen**: dikemaskini untuk direction semasa
+>
+> **Current reality**:
+> - PUSPA bukan lagi dibingkaikan sebagai full OpenClaw control panel
+> - route utama sekarang ialah login → dashboard routes → API `v1`
+> - OpenClaw duduk sebagai webhook, automation, dan operator messaging layer
+> - case intelligence dan disbursement readiness kini sebahagian daripada senibina operasi utama
 
 ---
 
@@ -15,8 +20,8 @@
 
 | Prinsip | Penerangan |
 |---|---|
-| **Single-Page Application** | Satu route (`/`) dengan tab-based navigation — tiada page transitions |
-| **Modular Components** | Setiap modul diisolasi dalam folder terpisah (`puspa/`, `openclaw/`) |
+| **Route-based Operations App** | Login di `/` dan modul operasi utama melalui dashboard routes berasingan |
+| **Modular Components** | Komponen dipecahkan ikut domain seperti auth, cases, disbursements, dashboard, dan shared UI |
 | **API-First** | Semua data access melalui REST API routes — tiada direct Prisma calls dari client |
 | **Hydration Safety** | `useSyncExternalStore` pattern untuk mengelakkan hydration mismatch |
 | **Progressive Enhancement** | Core NGO modules berfungsi tanpa OpenClaw — AI features adalah enhancement |
@@ -32,7 +37,8 @@
 │  │                    Next.js App Router                        │   │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │   │
 │  │  │  page.tsx    │  │  layout.tsx  │  │  globals.css     │  │   │
-│  │  │  (SPA Tabs)  │  │  (Fonts,     │  │  (Theme,         │  │   │
+│  │  │  (Login +    │  │  (Fonts,     │  │  (Theme,         │  │   │
+│  │  │   Entry)     │  │   Theme)     │  │   Tailwind 4)    │  │   │
 │  │  │              │  │   Theme)     │  │   Tailwind 4)    │  │   │
 │  │  └──────┬───────┘  └──────────────┘  └──────────────────┘  │   │
 │  │         │                                                    │   │

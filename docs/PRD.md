@@ -1,12 +1,15 @@
 # PRD — Product Requirements Document
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA Product Requirements Document
 
-> **Versi**: 1.0.0
-> **Tarikh**: Julai 2025
+> **Versi**: 1.1.0
 > **Status**: Active Development
 > **Pemilik Produk**: Pertubuhan Urus Peduli Asnaf (PUSPA)
-> **Dokumen**: Dikemaskini terakhir — Julai 2025
+>
+> **Current direction**:
+> - PUSPA fokus pada operasi NGO, case workflow, disbursement control, dan operator intelligence
+> - OpenClaw berada di luar app UI utama sebagai automation + messaging layer
+> - login experience, case intelligence, dan payout readiness sekarang dianggap sebahagian daripada baseline product, bukan stretch feature
 
 ---
 
@@ -24,10 +27,10 @@ Pertubuhan Urus Peduli Asnaf (PUSPA) ialah sebuah pertubuhan kebajikan Islam yan
 
 ### 1.2 Penyelesaian
 
-Membangunkan **sistem pengurusan bersepadu** yang menggabungkan:
-1. **Modul pengurusan NGO asas** — ahli, program, sumbangan, aktiviti
-2. **Keupayaan AI** — laporan pintar, chatbot, penilaian kebajikan, penentuan kelayakan
-3. **Platform AI Agent (OpenClaw)** — MCP Servers, Plugins, Integrations, Terminal, Multi-Agent orchestration
+Membangunkan **sistem pengurusan NGO berorientasikan operasi** yang menggabungkan:
+1. **Case dan disbursement workflow** — dari intake, verification, scoring, approval hingga payout
+2. **Keupayaan AI yang menyokong operator** — laporan, chat, welfare/member tools, dan recommendation surfaces
+3. **Automation layer melalui OpenClaw** — webhook orchestration, alerts, summaries, dan channel delivery
 
 ### 1.3 Matlamat Perniagaan
 

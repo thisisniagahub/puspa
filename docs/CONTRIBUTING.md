@@ -1,9 +1,10 @@
 # CONTRIBUTING — Panduan Penyumbang
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA Operations App
 
-> **Versi**: 1.0.0
-> **Tarikh**: Julai 2025
+> **Versi**: 1.1.0
+>
+> Sebelum menyumbang, pastikan perubahan anda selari dengan direction semasa: PUSPA sebagai app operasi NGO, OpenClaw sebagai automation layer, dan route `v1` sebagai API surface utama untuk aliran teras.
 
 ---
 

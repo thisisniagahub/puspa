@@ -1,11 +1,13 @@
 # API — Rujukan API Lengkap
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA API Surface (Current Direction)
 
-> **Versi**: 1.0.0
-> **Base URL**: `/api`
+> **Versi**: 1.1.0
+> **Base URL**: `/api` dan `/api/v1`
 > **Format**: JSON
-> **Authentication**: ❌ Tidak dilaksanakan (semua route terbuka)
+> **Authentication**: ✅ Dilaksanakan pada surface utama `v1`
+>
+> **Nota penting**: dokumen ini masih mengandungi sebahagian route legacy `/api/*`, tetapi product surface semasa lebih berasaskan route `v1` untuk auth, cases, disbursements, donations, programmes, users, reports, audit, dan stats.
 
 ---
 
@@ -13,14 +15,14 @@
 
 | Kategori | Routes | Kaedah |
 |---|---|---|
-| Dashboard | `/api/stats` | GET |
-| Ahli | `/api/members`, `/api/members/[id]` | GET, POST, PUT, DELETE |
-| Program | `/api/programmes`, `/api/programmes/[id]` | GET, POST, PUT, DELETE |
-| Donasi | `/api/donations`, `/api/donations/[id]` | GET, POST, PUT, DELETE |
-| Aktiviti | `/api/activities` | GET |
-| AI | `/api/chat`, `/api/report` | POST |
-| Member Tools | `/api/members/tools/*` | GET, POST |
-| Seed | `/api/seed` | POST |
+| Auth | `/api/v1/auth` | GET, POST, DELETE |
+| Cases | `/api/v1/cases`, `/api/v1/cases/[id]`, `/api/v1/cases/[id]/notes` | GET, POST, PUT |
+| Disbursements | `/api/v1/disbursements`, `/api/v1/disbursements/[id]` | GET, POST, PUT |
+| Donations | `/api/v1/donations`, `/api/v1/donations/[id]` | GET, POST, PUT, DELETE |
+| Programmes | `/api/v1/programmes`, `/api/v1/programmes/[id]` | GET, POST, PUT, DELETE |
+| Users | `/api/v1/users`, `/api/v1/users/[id]` | GET, POST, PUT |
+| Reports / Audit / Stats | `/api/v1/reports`, `/api/v1/audit`, `/api/v1/stats` | GET, POST |
+| Legacy modules | `/api/*` | mixed |
 
 ---
 

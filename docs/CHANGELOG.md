@@ -1,10 +1,28 @@
 # CHANGELOG — Log Perubahan
 
-## PUSPA + OpenClaw Integrated Platform
+## PUSPA Operations App
 
 > Format berdasarkan [Keep a Changelog](https://keepachangelog.com/)
 
 ---
+
+## [1.1.0] — 2026-04-21
+
+### Added
+- Premium login screen refresh with stronger motion, trust messaging, and improved operator-facing hierarchy.
+- Case intelligence surfaces in the case workflow, including next action guidance, beneficiary 360 summary, risk flags, related cases, recommendations, and quick signals.
+- Disbursement readiness and reconciliation signals for payout operators.
+- PUSPA outbound OpenClaw webhook bridge for ops events.
+- Optional direct Telegram notification lane from PUSPA for ops alerts.
+
+### Changed
+- Product direction clarified: PUSPA remains the core NGO operations app, while OpenClaw is treated as the automation and messaging layer.
+- Documentation refreshed to better match the current route-based app structure and `v1` API reality.
+- Login experience upgraded from utilitarian auth card to a more polished, preview-ready entrance experience.
+
+### Fixed
+- Removed stale positioning in docs that implied OpenClaw was the primary in-app control surface.
+- Removed outdated references to public-open auth assumptions in current API docs.
 
 ## [1.0.0] — 2025-07-15
 
