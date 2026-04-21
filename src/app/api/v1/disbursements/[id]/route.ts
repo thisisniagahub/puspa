@@ -3,6 +3,7 @@ import { apiSuccess, apiError, apiNotFound } from "@/lib/api-response";
 import { disbursementUpdateSchema } from "@/lib/validators";
 import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { createAuditLog, getClientIp } from "@/lib/audit";
+import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/disbursements/[id]
@@ -108,6 +109,27 @@ export async function PATCH(
       details: { from: existing.status, to: parsed.data.status, amount: existing.amount },
       ipAddress: getClientIp(request),
     });
+
+    if (parsed.data.status && parsed.data.status !== existing.status) {
+      await sendOpenClawWebhook(buildOpenClawEvent({
+        source: "puspa",
+        eventType: parsed.data.status === "completed" ? "disbursement_completed" : "disbursement_status_changed",
+        occurredAt: new Date().toISOString(),
+        entity: "disbursement",
+        entityId: id,
+        actor: { userId: session.userId, name: session.name, role: session.role },
+        data: {
+          disbursementNumber: updated.disbursementNumber,
+          amount: updated.amount,
+          fromStatus: existing.status,
+          toStatus: parsed.data.status,
+          recipientName: updated.recipientName,
+          caseNumber: updated.case?.caseNumber ?? null,
+          programmeName: updated.programme?.name ?? null,
+          processedDate: updated.processedDate ? new Date(updated.processedDate).toISOString() : null,
+        },
+      }));
+    }
 
     return apiSuccess(updated, "Pengagihan berjaya dikemaskini");
   } catch (error) {

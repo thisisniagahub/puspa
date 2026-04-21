@@ -3,6 +3,7 @@ import { apiSuccess, apiError, getPaginationParams, buildPagination } from "@/li
 import { caseCreateSchema } from "@/lib/validators";
 import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { createAuditLog, getClientIp } from "@/lib/audit";
+import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/cases - List cases with search, filter, pagination
@@ -147,6 +148,23 @@ export async function POST(request: NextRequest) {
       details: { caseNumber, applicantName: data.applicantName, status },
       ipAddress: getClientIp(request),
     });
+
+    await sendOpenClawWebhook(buildOpenClawEvent({
+      source: "puspa",
+      eventType: "case_created",
+      occurredAt: new Date().toISOString(),
+      entity: "case",
+      entityId: newCase.id,
+      actor: { userId: session.userId, name: session.name, role: session.role },
+      data: {
+        caseNumber: newCase.caseNumber,
+        status: newCase.status,
+        applicantName: newCase.applicantName,
+        priority: newCase.priority,
+        category: newCase.category,
+        programmeName: newCase.programme?.name ?? null,
+      },
+    }));
 
     return apiSuccess(newCase, { status: 201, message: "Kes berjaya dicipta" });
   } catch (error) {

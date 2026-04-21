@@ -4,6 +4,7 @@ import { caseUpdateSchema } from "@/lib/validators";
 import { createAuditLog, getClientIp } from "@/lib/audit";
 import { canTransitionCase } from "@/lib/auth";
 import { requireAuth, requirePermission, AuthError } from "@/lib/session";
+import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/cases/[id]
@@ -189,6 +190,26 @@ export async function PATCH(
       details: { from: existing.status, to: data.status ?? existing.status, fields: Object.keys(data) },
       ipAddress: getClientIp(request),
     });
+
+    if (data.status && data.status !== existing.status) {
+      await sendOpenClawWebhook(buildOpenClawEvent({
+        source: "puspa",
+        eventType: "case_status_changed",
+        occurredAt: new Date().toISOString(),
+        entity: "case",
+        entityId: id,
+        actor: { userId: session.userId, name: session.name, role: session.role },
+        data: {
+          caseNumber: updated.caseNumber,
+          applicantName: updated.applicantName,
+          fromStatus: existing.status,
+          toStatus: data.status,
+          verificationScore: data.verificationScore ?? updated.verificationScore ?? null,
+          rejectionReason: data.rejectionReason ?? null,
+          programmeName: updated.programme?.name ?? null,
+        },
+      }));
+    }
 
     return apiSuccess(updated, "Kes berjaya dikemaskini");
   } catch (error) {

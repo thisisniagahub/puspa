@@ -3,6 +3,7 @@ import { apiSuccess, apiCreated, apiError, getPaginationParams, buildPagination 
 import { disbursementCreateSchema, disbursementUpdateSchema } from "@/lib/validators";
 import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { createAuditLog, getClientIp } from "@/lib/audit";
+import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/disbursements — List disbursements
@@ -117,6 +118,24 @@ export async function POST(request: NextRequest) {
       details: { amount: data.amount, caseNumber: caseData.caseNumber },
       ipAddress: getClientIp(request),
     });
+
+    await sendOpenClawWebhook(buildOpenClawEvent({
+      source: "puspa",
+      eventType: "disbursement_created",
+      occurredAt: new Date().toISOString(),
+      entity: "disbursement",
+      entityId: disbursement.id,
+      actor: { userId: session.userId, name: session.name, role: session.role },
+      data: {
+        disbursementNumber: disbursement.disbursementNumber,
+        amount: disbursement.amount,
+        status: disbursement.status,
+        method: disbursement.method,
+        recipientName: disbursement.recipientName,
+        caseNumber: disbursement.case?.caseNumber ?? null,
+        programmeName: disbursement.programme?.name ?? null,
+      },
+    }));
 
     return apiCreated(disbursement, "Pengagihan berjaya direkod");
   } catch (error) {

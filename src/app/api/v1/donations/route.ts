@@ -3,6 +3,7 @@ import { apiSuccess, apiCreated, apiError, apiNotFound, getPaginationParams, bui
 import { donationCreateSchema, donationUpdateSchema } from "@/lib/validators";
 import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { createAuditLog, getClientIp } from "@/lib/audit";
+import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/donations — List with filtering, search, pagination
@@ -122,6 +123,24 @@ export async function POST(request: NextRequest) {
       details: { amount: data.amount, method: data.method, donor: data.donorName },
       ipAddress: getClientIp(request),
     });
+
+    await sendOpenClawWebhook(buildOpenClawEvent({
+      source: "puspa",
+      eventType: donation.status === "confirmed" ? "donation_received" : "donation_recorded",
+      occurredAt: new Date().toISOString(),
+      entity: "donation",
+      entityId: donation.id,
+      actor: { userId: session.userId, name: session.name, role: session.role },
+      data: {
+        donorName: donation.donorName,
+        amount: donation.amount,
+        method: donation.method,
+        status: donation.status,
+        programmeName: donation.programme?.name ?? null,
+        receiptNumber: donation.receiptNumber,
+        referenceNumber: donation.referenceNumber,
+      },
+    }));
 
     return apiCreated(donation, "Sumbangan berjaya direkod");
   } catch (error) {

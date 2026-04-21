@@ -18,6 +18,8 @@
 
 Platform ini juga mengintegrasikan **OpenClaw** — sebuah AI Agent Platform yang menyediakan keupayaan MCP Servers, Plugin marketplace, Integrations, Terminal, Multi-Agent orchestration, Model management, dan Automation.
 
+> Integration note: untuk production direction yang lebih kemas, rujuk `docs/OPENCLAW-INTEGRATION.md`. Recommended path ialah jadikan PUSPA sebagai core NGO app, dan OpenClaw sebagai automation + messaging layer melalui webhook bridge.
+
 ## ✨ Ciri-ciri Utama
 
 ### 📊 Dashboard PUSPA (Modul Asas)

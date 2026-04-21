@@ -3,6 +3,7 @@ import { apiSuccess, apiError, apiNotFound } from "@/lib/api-response";
 import { donationUpdateSchema } from "@/lib/validators";
 import { requireAuth, requirePermission, AuthError } from "@/lib/session";
 import { createAuditLog, getClientIp } from "@/lib/audit";
+import { buildOpenClawEvent, sendOpenClawWebhook } from "@/lib/openclaw-webhook";
 import { NextRequest } from "next/server";
 
 // GET /api/v1/donations/[id]
@@ -75,6 +76,26 @@ export async function PATCH(
       details: { fields: Object.keys(parsed.data), from: existing.status, to: parsed.data.status },
       ipAddress: getClientIp(request),
     });
+
+    if (parsed.data.status && parsed.data.status !== existing.status) {
+      await sendOpenClawWebhook(buildOpenClawEvent({
+        source: "puspa",
+        eventType: parsed.data.status === "confirmed" ? "donation_received" : "donation_status_changed",
+        occurredAt: new Date().toISOString(),
+        entity: "donation",
+        entityId: id,
+        actor: { userId: session.userId, name: session.name, role: session.role },
+        data: {
+          donorName: updated.donorName,
+          amount: updated.amount,
+          method: updated.method,
+          fromStatus: existing.status,
+          toStatus: parsed.data.status,
+          programmeName: updated.programme?.name ?? null,
+          caseNumber: updated.case?.caseNumber ?? null,
+        },
+      }));
+    }
 
     return apiSuccess(updated, "Sumbangan berjaya dikemaskini");
   } catch (error) {
