@@ -114,6 +114,27 @@ function getNextAction(status: string) {
   }
 }
 
+function getDisbursementIssues(item: DisbursementItem) {
+  return [
+    !item.scheduledDate && ['pending', 'approved', 'processing'].includes(item.status) ? 'Belum ada jadual proses' : null,
+    item.method === 'bank_transfer' && (!item.bankName || !item.accountNumber || !item.accountHolder) ? 'Maklumat bank tak lengkap' : null,
+    !item.recipientPhone ? 'Tiada nombor telefon penerima' : null,
+    !item.recipientName ? 'Nama penerima tiada' : null,
+    !item.recipientIc ? 'IC penerima tiada' : null,
+    !item.purpose ? 'Tujuan pengagihan tiada' : null,
+    item.status === 'completed' && !item.processedDate ? 'Selesai tanpa tarikh proses' : null,
+  ].filter(Boolean) as string[];
+}
+
+function canAdvanceDisbursement(item: DisbursementItem, nextStatus: string | null) {
+  if (!nextStatus) return true;
+  if (!['processing', 'completed'].includes(nextStatus)) return true;
+
+  return !getDisbursementIssues(item).some((issue) =>
+    ['Maklumat bank tak lengkap', 'Nama penerima tiada', 'IC penerima tiada', 'Tujuan pengagihan tiada'].includes(issue)
+  );
+}
+
 function CreateDisbursementDialog({
   cases,
   loading,
@@ -298,6 +319,114 @@ function CreateDisbursementDialog({
   );
 }
 
+function EditDisbursementDialog({
+  item,
+  open,
+  loading,
+  onOpenChange,
+  onSave,
+}: {
+  item: DisbursementItem | null;
+  open: boolean;
+  loading: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (id: string, payload: Record<string, unknown>) => Promise<void>;
+}) {
+  const [form, setForm] = useState({
+    recipientName: item?.recipientName ?? '',
+    recipientIc: item?.recipientIc ?? '',
+    recipientPhone: item?.recipientPhone ?? '',
+    purpose: item?.purpose ?? '',
+    notes: item?.notes ?? '',
+    scheduledDate: item?.scheduledDate ? new Date(item.scheduledDate).toISOString().slice(0, 10) : '',
+    bankName: item?.bankName ?? '',
+    accountNumber: item?.accountNumber ?? '',
+    accountHolder: item?.accountHolder ?? '',
+  });
+
+  if (!item) return null;
+
+  const submit = async () => {
+    await onSave(item.id, {
+      recipientName: form.recipientName.trim(),
+      recipientIc: form.recipientIc.trim(),
+      recipientPhone: form.recipientPhone.trim(),
+      purpose: form.purpose.trim(),
+      notes: form.notes.trim(),
+      scheduledDate: form.scheduledDate || null,
+      bankName: form.bankName.trim(),
+      accountNumber: form.accountNumber.trim(),
+      accountHolder: form.accountHolder.trim(),
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Kemaskini pengagihan</DialogTitle>
+          <DialogDescription>
+            Lengkapkan maklumat remediation untuk {item.disbursementNumber} sebelum gerakkan payout ke peringkat seterusnya.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 py-2 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Nama penerima</Label>
+            <Input value={form.recipientName} onChange={(e) => setForm((prev) => ({ ...prev, recipientName: e.target.value }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>No. IC penerima</Label>
+            <Input value={form.recipientIc} onChange={(e) => setForm((prev) => ({ ...prev, recipientIc: e.target.value }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>No. telefon penerima</Label>
+            <Input value={form.recipientPhone} onChange={(e) => setForm((prev) => ({ ...prev, recipientPhone: e.target.value }))} />
+          </div>
+          <div className="space-y-2">
+            <Label>Tarikh dijadualkan</Label>
+            <Input type="date" value={form.scheduledDate} onChange={(e) => setForm((prev) => ({ ...prev, scheduledDate: e.target.value }))} />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label>Tujuan</Label>
+            <Input value={form.purpose} onChange={(e) => setForm((prev) => ({ ...prev, purpose: e.target.value }))} />
+          </div>
+
+          {item.method === 'bank_transfer' && (
+            <>
+              <div className="space-y-2">
+                <Label>Nama bank</Label>
+                <Input value={form.bankName} onChange={(e) => setForm((prev) => ({ ...prev, bankName: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>No. akaun</Label>
+                <Input value={form.accountNumber} onChange={(e) => setForm((prev) => ({ ...prev, accountNumber: e.target.value }))} />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Nama pemegang akaun</Label>
+                <Input value={form.accountHolder} onChange={(e) => setForm((prev) => ({ ...prev, accountHolder: e.target.value }))} />
+              </div>
+            </>
+          )}
+
+          <div className="space-y-2 md:col-span-2">
+            <Label>Nota tambahan</Label>
+            <Textarea rows={3} value={form.notes} onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))} />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button onClick={submit} disabled={loading} className="gap-2">
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Simpan Kemaskini
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function DisbursementsPage() {
   const { token, hasPermission } = useAuth();
   const [items, setItems] = useState<DisbursementItem[]>([]);
@@ -307,6 +436,8 @@ export default function DisbursementsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<DisbursementItem | null>(null);
   const canManage = hasPermission('disbursements:create') || hasPermission('disbursements:update');
 
   const loadData = async () => {
@@ -356,7 +487,7 @@ export default function DisbursementsPage() {
   const pendingCount = items.filter((item) => ['pending', 'approved', 'processing'].includes(item.status)).length;
   const completedCount = items.filter((item) => item.status === 'completed').length;
   const scheduleGapCount = items.filter((item) => ['pending', 'approved', 'processing'].includes(item.status) && !item.scheduledDate).length;
-  const bankInfoGapCount = items.filter((item) => item.method === 'bank_transfer' && (!item.bankName || !item.accountNumber)).length;
+  const bankInfoGapCount = items.filter((item) => item.method === 'bank_transfer' && (!item.bankName || !item.accountNumber || !item.accountHolder)).length;
   const contactGapCount = items.filter((item) => !item.recipientPhone).length;
 
   const createDisbursement = async (payload: {
@@ -415,6 +546,29 @@ export default function DisbursementsPage() {
     }
   };
 
+  const saveDisbursement = async (id: string, payload: Record<string, unknown>) => {
+    if (!token) return;
+
+    try {
+      setSubmitting(true);
+      const res = await authFetch(`/api/v1/disbursements/${id}`, token, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Gagal menyimpan pengagihan');
+
+      toast.success('Maklumat pengagihan berjaya dikemaskini');
+      setEditOpen(false);
+      setSelectedItem(null);
+      await loadData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menyimpan pengagihan');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -457,6 +611,18 @@ export default function DisbursementsPage() {
           />
         )}
       </div>
+
+      <EditDisbursementDialog
+        key={selectedItem?.id ?? 'none'}
+        item={selectedItem}
+        open={editOpen}
+        loading={submitting}
+        onOpenChange={(nextOpen) => {
+          setEditOpen(nextOpen);
+          if (!nextOpen) setSelectedItem(null);
+        }}
+        onSave={saveDisbursement}
+      />
 
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
         <Card>
@@ -558,12 +724,8 @@ export default function DisbursementsPage() {
             </div>
           ) : visibleItems.map((item) => {
             const nextAction = getNextAction(item.status);
-            const issues = [
-              !item.scheduledDate && ['pending', 'approved', 'processing'].includes(item.status) ? 'Belum ada jadual proses' : null,
-              item.method === 'bank_transfer' && (!item.bankName || !item.accountNumber) ? 'Maklumat bank tak lengkap' : null,
-              !item.recipientPhone ? 'Tiada nombor telefon penerima' : null,
-              item.status === 'completed' && !item.processedDate ? 'Selesai tanpa tarikh proses' : null,
-            ].filter(Boolean) as string[];
+            const issues = getDisbursementIssues(item);
+            const canAdvance = canAdvanceDisbursement(item, nextAction?.to ?? null);
             return (
               <div key={item.id} className="rounded-xl border p-4 transition-colors hover:bg-muted/30">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -602,16 +764,33 @@ export default function DisbursementsPage() {
                       <p className="text-lg font-bold">{formatCurrency(item.amount)}</p>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">{METHOD_LABELS[item.method] ?? item.method}</p>
                     </div>
+                    {canManage && hasPermission('disbursements:update') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setEditOpen(true);
+                        }}
+                      >
+                        Kemaskini
+                      </Button>
+                    )}
                     {canManage && nextAction && hasPermission('disbursements:update') && (
                       <Button
                         size="sm"
                         onClick={() => void updateStatus(item.id, nextAction.to)}
-                        disabled={submitting}
+                        disabled={submitting || !canAdvance}
                         className="gap-2"
                       >
                         {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                         {nextAction.label}
                       </Button>
+                    )}
+                    {nextAction && !canAdvance && (
+                      <p className="max-w-[220px] text-[11px] text-amber-600 dark:text-amber-300 lg:text-right">
+                        Lengkapkan remediation dulu sebelum status boleh digerakkan.
+                      </p>
                     )}
                     {!nextAction && (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">

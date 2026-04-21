@@ -148,6 +148,24 @@ export async function PATCH(
         );
       }
 
+      const nextMethod = typeof updateData.method === "string" ? updateData.method : existing.method;
+      const nextBankName = typeof updateData.bankName === "string" ? updateData.bankName : existing.bankName;
+      const nextAccountNumber = typeof updateData.accountNumber === "string" ? updateData.accountNumber : existing.accountNumber;
+      const nextAccountHolder = typeof updateData.accountHolder === "string" ? updateData.accountHolder : existing.accountHolder;
+      const nextRecipientName = typeof updateData.recipientName === "string" ? updateData.recipientName : existing.recipientName;
+      const nextRecipientIc = typeof updateData.recipientIc === "string" ? updateData.recipientIc : existing.recipientIc;
+      const nextPurpose = typeof updateData.purpose === "string" ? updateData.purpose : existing.purpose;
+
+      if (["processing", "completed"].includes(parsed.data.status)) {
+        if (!nextRecipientName?.trim() || !nextRecipientIc?.trim() || !nextPurpose?.trim()) {
+          return apiError("Nama penerima, IC penerima, dan tujuan mesti lengkap sebelum pengagihan diproses", 422);
+        }
+
+        if (nextMethod === "bank_transfer" && (!nextBankName?.trim() || !nextAccountNumber?.trim() || !nextAccountHolder?.trim())) {
+          return apiError("Maklumat bank mesti lengkap sebelum pindahan bank diproses", 422);
+        }
+      }
+
       // Auto-set processedBy when completed
       if (parsed.data.status === "completed") {
         updateData.processedBy = session.userId;

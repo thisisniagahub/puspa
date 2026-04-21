@@ -199,6 +199,8 @@ export const disbursementUpdateSchema = z.object({
   bankName: z.string().max(100).optional(),
   accountNumber: z.string().max(30).optional(),
   accountHolder: z.string().max(100).optional(),
+  recipientName: z.string().min(2).max(100).optional(),
+  recipientIc: z.string().min(1).max(20).optional(),
   recipientPhone: z.string().max(15).optional(),
   purpose: z.string().max(1000).optional(),
   notes: z.string().max(2000).optional(),
