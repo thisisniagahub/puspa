@@ -74,6 +74,65 @@ Based on the OpenClaw docs (`plugins/webhooks.md`):
 4. `disbursement_completed`
    - send internal confirmation summary
 
+## Dedicated Telegram lane for PUSPA
+
+Recommended setup: keep the main NiagaBot Telegram bot untouched, then add a second Telegram account in OpenClaw for a PUSPA-specific bot such as `PuspaCareBot`.
+
+Suggested account id:
+
+```json5
+{
+  channels: {
+    telegram: {
+      accounts: {
+        "puspa-care": {
+          enabled: true,
+          dmPolicy: "allowlist",
+          groupPolicy: "allowlist",
+          allowFrom: ["6798585537"],
+          botToken: {
+            source: "env",
+            provider: "default",
+            id: "PUSPA_CARE_BOT_TOKEN"
+          },
+          defaultTo: "6798585537"
+        }
+      }
+    }
+  }
+}
+```
+
+Why this split helps:
+- PUSPA notifications stay branded and isolated
+- existing NiagaBot operator bot keeps running without disruption
+- outbound notifications can explicitly target `accountId: "puspa-care"`
+
+## Recommended event delivery shape
+
+Use the existing PUSPA webhook route for app -> OpenClaw delivery, then let OpenClaw fan out to Telegram via the dedicated account.
+
+Recommended production env pairing:
+
+```env
+# In PUSPA deployment env
+PUSPA_OPENCLAW_WEBHOOK_ENABLED=true
+PUSPA_OPENCLAW_WEBHOOK_URL=https://operator.gangniaga.my/plugins/webhooks/puspa
+PUSPA_OPENCLAW_WEBHOOK_SECRET=shared-secret-with-openclaw
+
+# Optional direct Telegram notification lane from PUSPA itself
+PUSPA_TELEGRAM_ENABLED=true
+PUSPA_TELEGRAM_BOT_TOKEN=telegram-bot-token
+PUSPA_TELEGRAM_CHAT_ID=telegram-chat-id
+```
+
+## Practical rollout note
+
+Today’s working rollout path is:
+- OpenClaw holds a dedicated Telegram account id: `puspa-care`
+- PUSPA can also send direct Telegram ops alerts with `PUSPA_TELEGRAM_*` env vars
+- keep secrets in deployment secret manager, not in git
+
 ## Important note
 
 Do **not** make PUSPA a full OpenClaw control panel.
