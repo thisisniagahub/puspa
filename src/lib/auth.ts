@@ -77,7 +77,7 @@ export const CASE_TRANSITIONS: Record<string, string[]> = {
   scoring: ["scored", "rejected"],
   scored: ["approved", "rejected"],
   approved: ["disbursing", "rejected"],
-  disbursing: ["disbursed", "failed"],
+  disbursing: ["disbursed"],
   disbursed: ["follow_up", "closed"],
   follow_up: ["closed", "disbursing"],
   closed: [],

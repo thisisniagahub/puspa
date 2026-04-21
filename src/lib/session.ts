@@ -5,8 +5,12 @@
 
 import { db } from "@/lib/db";
 import { ROLES, type UserRole, hasPermission, type Permission } from "@/lib/auth";
+import { getServerEnv } from "@/lib/env";
 
-const TOKEN_SECRET = process.env.TOKEN_SECRET ?? "puspa-session-secret-change-in-production";
+const TOKEN_SECRET = getServerEnv("TOKEN_SECRET", {
+  defaultValue: "dev-only-token-secret-change-me-now",
+  minLength: 24,
+});
 const TOKEN_EXPIRY_HOURS = 24;
 
 // In-memory token store

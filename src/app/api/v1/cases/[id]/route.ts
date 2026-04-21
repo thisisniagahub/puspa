@@ -62,7 +62,6 @@ export async function PATCH(
 ) {
   try {
     const session = requireAuth(request);
-    requirePermission(session, "cases:update");
     const { id } = await params;
 
     const existing = await db.case.findUnique({ where: { id } });
@@ -75,6 +74,15 @@ export async function PATCH(
     }
 
     const data = parsed.data;
+    const hasStatusChange = Boolean(data.status && data.status !== existing.status);
+    const hasGeneralFieldUpdate = Object.entries(data).some(([key, value]) => {
+      if (value === undefined) return false;
+      return !["status", "verificationScore", "rejectionReason", "followUpDate"].includes(key);
+    });
+
+    if (hasGeneralFieldUpdate || !hasStatusChange) {
+      requirePermission(session, "cases:update");
+    }
 
     // Status transition validation
     if (data.status && data.status !== existing.status) {
@@ -109,16 +117,16 @@ export async function PATCH(
           updateData.verifiedAt = new Date();
           updateData.verifiedBy = session.userId;
         }
-      }
-      if (["approved", "disbursing"].includes(data.status)) {
+      } else if (data.status === "approved") {
         requirePermission(session, "cases:approve");
         if (data.status === "approved") {
           updateData.approvedAt = new Date();
           updateData.approvedBy = session.userId;
         }
-      }
-      if (data.status === "disbursing") {
+      } else if (["disbursing", "disbursed"].includes(data.status)) {
         requirePermission(session, "cases:disburse");
+      } else {
+        requirePermission(session, "cases:update");
       }
       if (data.status === "closed") {
         updateData.closedAt = new Date();

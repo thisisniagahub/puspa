@@ -4,13 +4,12 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, LogIn, AlertCircle, Loader2, Shield } from "lucide-react";
+import { Eye, EyeOff, LogIn, AlertCircle, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
 
 const subscribe = () => () => {};
 const getSnapshot = () => true;
@@ -40,18 +39,6 @@ export default function LoginPage() {
       return;
     }
 
-    const result = await login(email, password);
-    if (!result.success) {
-      setError(result.error ?? "Gagal log masuk");
-    }
-    setLoading(false);
-  };
-
-  const quickLogin = async (email: string, password: string) => {
-    setEmail(email);
-    setPassword(password);
-    setError("");
-    setLoading(true);
     const result = await login(email, password);
     if (!result.success) {
       setError(result.error ?? "Gagal log masuk");
@@ -154,35 +141,6 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
-
-            {/* Demo Accounts */}
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex items-center gap-2 mb-3">
-                <Shield className="w-3.5 h-3.5 text-muted-foreground" />
-                <p className="text-xs font-medium text-muted-foreground">Akaun Demo</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: "Pentadbir", email: "admin@puspa.org", pass: "admin123", color: "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/40" },
-                  { label: "Operasi", email: "ops@puspa.org", pass: "ops123", color: "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/40" },
-                  { label: "Kewangan", email: "finance@puspa.org", pass: "finance123", color: "bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/40" },
-                  { label: "Sukarelawan", email: "volunteer@puspa.org", pass: "volunteer123", color: "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/40" },
-                ].map((account) => (
-                  <button
-                    key={account.email}
-                    type="button"
-                    onClick={() => quickLogin(account.email, account.pass)}
-                    disabled={loading}
-                    className={cn(
-                      "text-xs font-medium px-3 py-2 rounded-lg transition-colors text-left",
-                      account.color
-                    )}
-                  >
-                    {account.label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </CardContent>
         </Card>
 

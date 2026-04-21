@@ -44,8 +44,11 @@ function loadEnvFile(filePath) {
 function main() {
   console.log('[prebuild] Starting prebuild setup...');
 
-  // Load .env.production (for Vercel production builds)
-  loadEnvFile(path.join(process.cwd(), '.env.production'));
+  if (process.env.PUSPA_LOAD_ENV_FILE === 'true') {
+    loadEnvFile(path.join(process.cwd(), '.env.production'));
+  } else {
+    console.log('[prebuild] Skipping .env.production load. Expecting env vars from deployment secret manager.');
+  }
 
   // Verify DATABASE_URL is available
   if (!process.env.DATABASE_URL) {
@@ -55,6 +58,11 @@ function main() {
   }
 
   const dbUrl = process.env.DATABASE_URL;
+  if (dbUrl.includes('[YOUR-DB-PASSWORD]') || dbUrl.includes('db.example.supabase.co')) {
+    console.log('[prebuild] Placeholder DATABASE_URL detected. Skipping schema push.');
+    process.exit(0);
+  }
+
   const isPostgres = dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
 
   if (!isPostgres) {

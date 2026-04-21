@@ -1,10 +1,15 @@
 import { db } from "@/lib/db";
 import { apiSuccess, apiError } from "@/lib/api-response";
-import { hashPassword, createSession } from "@/lib/session";
+import { hashPassword } from "@/lib/session";
 import { NextRequest } from "next/server";
+import { isDemoModeEnabled } from "@/lib/env";
 
 export async function POST(_request: NextRequest) {
   try {
+    if (!isDemoModeEnabled()) {
+      return apiError("Demo seed route disabled", 404);
+    }
+
     // Check if data already exists
     const userCount = await db.user.count();
     if (userCount > 0) {
@@ -172,12 +177,12 @@ export async function POST(_request: NextRequest) {
 
     return apiSuccess({
       message: "Database berjaya diisi dengan data sample",
-      demoAccounts: {
-        admin: { email: "admin@puspa.org", password: "admin123" },
-        ops: { email: "ops@puspa.org", password: "ops123" },
-        finance: { email: "finance@puspa.org", password: "finance123" },
-        volunteer: { email: "volunteer@puspa.org", password: "volunteer123" },
-      },
+      demoAccounts: [
+        { email: "admin@puspa.org", role: "admin" },
+        { email: "ops@puspa.org", role: "ops" },
+        { email: "finance@puspa.org", role: "finance" },
+        { email: "volunteer@puspa.org", role: "volunteer" },
+      ],
       summary: {
         users: 4,
         programmes: programmes.length,

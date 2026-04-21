@@ -10,8 +10,12 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/session";
 import { apiSuccess, apiError } from "@/lib/api-response";
+import { getServerEnv, isDemoModeEnabled, isSetupRouteEnabled } from "@/lib/env";
 
-const SETUP_SECRET = process.env.SETUP_SECRET || "puspa-setup-2025";
+const SETUP_SECRET = getServerEnv("SETUP_SECRET", {
+  defaultValue: "dev-only-setup-secret-change-me-now",
+  minLength: 24,
+});
 
 // Demo users to seed on first run
 const DEMO_USERS = [
@@ -41,9 +45,18 @@ const DEMO_USERS = [
   },
 ] as const;
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
+  if (!isSetupRouteEnabled()) {
+    return apiError("Setup route disabled", 404);
+  }
+
+  if (!isDemoModeEnabled()) {
+    return apiError("Demo seeding disabled", 403);
+  }
+
   // ── 1. Validate secret ─────────────────────────────────────────
-  const secret = new URL(request.url).searchParams.get("secret");
+  const body = await request.json().catch(() => ({}));
+  const secret = typeof body?.secret === "string" ? body.secret : request.headers.get("x-setup-secret");
   if (secret !== SETUP_SECRET) {
     return apiError("Invalid setup secret", 403);
   }
@@ -84,14 +97,9 @@ export async function GET(request: NextRequest) {
       {
         status: "seeded",
         usersCreated: result.count,
-        demoAccounts: DEMO_USERS.map((u) => ({
-          email: u.email,
-          role: u.role,
-          name: u.name,
-          password: u.password,
-        })),
+        demoAccounts: DEMO_USERS.map((u) => ({ email: u.email, role: u.role, name: u.name })),
       },
-      { message: "PUSPA setup complete! Demo users created." },
+      { message: "PUSPA setup complete. Demo users seeded." },
     );
   } catch (error) {
     // Prisma failed — tables likely don't exist yet
