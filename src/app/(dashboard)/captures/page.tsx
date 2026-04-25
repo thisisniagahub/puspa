@@ -237,8 +237,8 @@ function CreateMemoDialog({
       setTitle("");
       setContent("");
       setLinkUrl("");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Gagal simpan memo");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal simpan memo");
     } finally {
       setSubmitting(false);
     }
@@ -306,8 +306,8 @@ function ConvertDialog({ capture, onConverted }: { capture: Capture; onConverted
       onConverted(json.data as Capture);
       toast.success("Capture converted");
       setOpen(false);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Gagal convert capture");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal convert capture");
     } finally {
       setSubmitting(false);
     }
