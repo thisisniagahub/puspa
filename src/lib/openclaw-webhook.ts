@@ -1,4 +1,4 @@
-type OpenClawEventType =
+export type OpenClawEventType =
   | "case_created"
   | "case_status_changed"
   | "donation_recorded"
@@ -10,7 +10,7 @@ type OpenClawEventType =
   | "capture_created"
   | "capture_converted";
 
-interface OpenClawEventEnvelope {
+export interface OpenClawEventEnvelope {
   schemaVersion?: "1";
   correlationId?: string;
   source: "puspa";
@@ -85,7 +85,7 @@ function formatCurrency(value: unknown) {
   }).format(amount);
 }
 
-function buildTelegramMessage(event: OpenClawEventEnvelope) {
+export function buildTelegramMessage(event: OpenClawEventEnvelope) {
   const amount = formatCurrency(event.data.amount);
   const actor = event.actor?.name ? `\n👤 ${event.actor.name}` : "";
 
