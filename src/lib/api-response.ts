@@ -48,8 +48,13 @@ export function apiForbidden(message?: string) {
 
 export function getPaginationParams(request: Request) {
   const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "10")));
+
+  const pageParam = parseInt(searchParams.get("page") ?? "1");
+  const page = Math.max(1, isNaN(pageParam) ? 1 : pageParam);
+
+  const limitParam = parseInt(searchParams.get("limit") ?? "10");
+  const limit = Math.min(100, Math.max(1, isNaN(limitParam) ? 10 : limitParam));
+
   const skip = (page - 1) * limit;
   return { page, limit, skip };
 }
